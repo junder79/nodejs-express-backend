@@ -24,9 +24,9 @@ app.use(bodyparser.json());
 
 
 var connAttrs = {
-    "user": "TEST2",
+    "user": "TEST3",
     "password": "real",
-    "connectString": "(DESCRIPTION =(LOAD_BALANCE = ON)(FAILOVER = ON)(ADDRESS =(PROTOCOL = TCP)(HOST = LOCALHOST)(PORT = 1521))(ADDRESS = (PROTOCOL = TCP)(HOST = LOCALHOST )(PORT=1521))(CONNECT_DATA=(SERVICE_NAME=XE)(FAILOVER_MODE=(TYPE=SELECT)(METHOD = BASIC))))"
+    "connectString": "(DESCRIPTION =(LOAD_BALANCE = ON)(FAILOVER = ON)(ADDRESS =(PROTOCOL = TCP)(HOST = LOCALHOST)(PORT = 1521))(ADDRESS = (PROTOCOL = TCP)(HOST = LOCALHOST )(PORT=1521))(CONNECT_DATA=(SERVICE_NAME=orclpdb)(FAILOVER_MODE=(TYPE=SELECT)(METHOD = BASIC))))"
 }
 
 // -------- VALIDAR AUTENTICACION USUARIOS --------------- //// 
@@ -321,7 +321,7 @@ app.get('/getAcondicionados', function (req, res) {
             }));
             return;
         }
-        connection.execute("SELECT IDACONDICIONADO,NOMBREACONDICIONADO,VALORACONDICIONADO FROM ACONDICIONADO ", {}, {
+        connection.execute("SELECT IDACOND,NOMBREACONDI,VALORACOND FROM ACONDICIONADO ", {}, {
             outFormat: oracledb.OBJECT // Return the result as Object
         }, function (err, result) {
             if (err) {
@@ -373,12 +373,17 @@ app.post('/agregarDepartamentos', function (req, res, next) {
             var valor = req.body.valor;
             const { picture } = req.files;
             var nombreImagen = picture.name;
-            picture.mv("./imagenes" + picture.name)
+            // picture.mv("./imagenes" + picture.name)
+
             // res.send({
             //     status:true,
             //     message:'Imagen subida'
             // })
 
+            // Convertir String a INT
+            var valorInt =parseInt(valor)
+            var cantidadInt =parseInt(cantidad)
+            var comunaInt =parseInt(comuna)
 
             oracledb.getConnection(connAttrs, function (err, connection) {
                 if (err) {
@@ -392,7 +397,7 @@ app.post('/agregarDepartamentos', function (req, res, next) {
                     return;
                 }
                 
-                connection.execute("BEGIN SP_CREAR_DEPARTAMENTO('"+nombre+"', 5 , '"+nombreImagen+"', '"+direccion+"' , '"+nombreImagen+"' ,'"+nombreImagen+"',1,6 ,'"+descripcion+"'); END;  ", {}, {
+                connection.execute("BEGIN SP_CREAR_DEPARTAMENTO('"+descripcion+"',  '"+nombre+"', '"+direccion+"' , '"+valorInt+"' ,1,1,6); END;  ", {}, {
                     outFormat: oracledb.OBJECT // Return the result as Object
                 }, function (err, result) {
                     if (err) {
@@ -407,8 +412,7 @@ app.post('/agregarDepartamentos', function (req, res, next) {
                         res.header('Access-Control-Allow-Headers', 'Content-Type');
                         res.header('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS');
                         res.contentType('application/json').status(200);
-                        res.send(JSON.stringify(result.rows));
-                        // console.log(JSON.stringify(result));
+                        res.send(JSON.stringify("1"));
                     }
                     // Release the connection
                     connection.release(
@@ -416,7 +420,7 @@ app.post('/agregarDepartamentos', function (req, res, next) {
                             if (err) {
                                 console.error(err.message);
                             } else {
-                                console.log("GET /sendTablespace : Connection released");
+                                console.log("POST , CONEXION ESTABLECIDA");
                             }
                         });
                 });
