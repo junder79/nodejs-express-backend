@@ -371,9 +371,11 @@ app.post('/agregarDepartamentos', function (req, res, next) {
             var descripcion = req.body.descripcion;
             var direccion = req.body.direccion;
             var valor = req.body.valor;
+            var comuna = req.body.comuna;
+            var cantidad = req.body.cantidad;
             const { picture } = req.files;
             var nombreImagen = picture.name;
-            // picture.mv("./imagenes" + picture.name)
+            picture.mv("./imagenes" + picture.name)
 
             // res.send({
             //     status:true,
@@ -381,9 +383,9 @@ app.post('/agregarDepartamentos', function (req, res, next) {
             // })
 
             // Convertir String a INT
-            var valorInt =parseInt(valor)
-            var cantidadInt =parseInt(cantidad)
-            var comunaInt =parseInt(comuna)
+            var valorInt = parseInt(valor);
+            var cantidadInt = parseInt(cantidad);
+            var comunaInt = parseInt(comuna);
 
             oracledb.getConnection(connAttrs, function (err, connection) {
                 if (err) {
@@ -396,31 +398,49 @@ app.post('/agregarDepartamentos', function (req, res, next) {
                     }));
                     return;
                 }
-                
-                connection.execute("BEGIN SP_CREAR_DEPARTAMENTO('"+descripcion+"',  '"+nombre+"', '"+direccion+"' , '"+valorInt+"' ,1,1,6); END;  ", {}, {
-                    outFormat: oracledb.OBJECT // Return the result as Object
-                }, function (err, result) {
+
+                var bindvars = {
+                    p_out: { type: oracledb.STRING, dir: oracledb.BIND_OUT, maxSize: 200 }
+                };
+                connection.execute("BEGIN SP_CREAR_DEPARTAMENTO('" + descripcion + "',  '" + nombre + "', '" + direccion + "' , '" + valorInt + "' ,1,'" + cantidadInt + "','" + comunaInt + "' , :p_out); END;  ", bindvars, function (err, result) {
                     if (err) {
                         res.set('Content-Type', 'application/json');
                         res.status(500).send(JSON.stringify({
                             status: 500,
-                            message: "Error getting the dba_tablespaces",
+                            message: "Error al Insertar",
                             detailed_message: err.message
                         }));
                     } else {
-                        res.header('Access-Control-Allow-Origin', '*');
-                        res.header('Access-Control-Allow-Headers', 'Content-Type');
-                        res.header('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS');
-                        res.contentType('application/json').status(200);
-                        res.send(JSON.stringify("1"));
+                        // res.status(200).send(JSON.stringify({
+                        //     status: 200,
+                        //     message: "Insertado",
+    
+                        // }));
+                        // var ultimaId = result.outBinds;
+                         // Insertar las Imagene
+                        connection.execute("BEGIN SP_INSERT_IMAGE(12,  'TEST'); END;", {}, {
+                            outFormat: oracledb.OBJECT // Return the result as Object
+                        }, function (err, result) {
+                            if (err) {
+                                // res.contentType('application/json').status(200);
+                                // res.send(JSON.stringify("Error al insertar Imagen"));
+                                console.log
+                            } else {
+                                res.contentType('application/json').status(200);
+                                res.send(JSON.stringify("Imagen Insertada"));
+                            }
+                           
+                        });
+                       
                     }
+                    
                     // Release the connection
                     connection.release(
                         function (err) {
                             if (err) {
                                 console.error(err.message);
                             } else {
-                                console.log("POST , CONEXION ESTABLECIDA");
+                                console.log("Conexion Establecida");
                             }
                         });
                 });
@@ -430,9 +450,103 @@ app.post('/agregarDepartamentos', function (req, res, next) {
 
         }
     } catch (error) {
-        res.status(500).send(e);
+        res.status(500).send(error);
     }
 });
+
+
+// Traer las regiones y comunas
+
+app.get('/getRegiones', function (req, res) {
+    "use strict";
+
+    oracledb.getConnection(connAttrs, function (err, connection) {
+        if (err) {
+            // Error al conectar
+            res.set('Content-Type', 'application/json');
+            res.status(500).send(JSON.stringify({
+                status: 500,
+                message: "Error al conectar a la base de datos",
+                detailed_message: err.message
+            }));
+            return;
+        }
+        connection.execute("SELECT idregion , nombreregion from region", {}, {
+            outFormat: oracledb.OBJECT // Return the result as Object
+        }, function (err, result) {
+            if (err) {
+                res.set('Content-Type', 'application/json');
+                res.status(500).send(JSON.stringify({
+                    status: 500,
+                    message: "Error getting the dba_tablespaces",
+                    detailed_message: err.message
+                }));
+            } else {
+                res.header('Access-Control-Allow-Origin', '*');
+                res.header('Access-Control-Allow-Headers', 'Content-Type');
+                res.header('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS');
+                res.contentType('application/json').status(200);
+                res.send(JSON.stringify(result.rows));
+                // console.log(JSON.stringify(result));
+            }
+            // Release the connection
+            connection.release(
+                function (err) {
+                    if (err) {
+                        console.error(err.message);
+                    } else {
+                        console.log("GET /sendTablespace : Connection released");
+                    }
+                });
+        });
+    });
+});
+
+app.get('/getComuna/:id', function (req, res) {
+    "use strict";
+    var regionId = req.params.id;
+    oracledb.getConnection(connAttrs, function (err, connection) {
+        if (err) {
+            // Error al conectar
+            res.set('Content-Type', 'application/json');
+            res.status(500).send(JSON.stringify({
+                status: 500,
+                message: "Error al conectar a la base de datos",
+                detailed_message: err.message
+            }));
+            return;
+        }
+        connection.execute("select idcomuna , nombrecomuna, region_idregion from comuna where region_idregion = '" + regionId + "'  ", {}, {
+            outFormat: oracledb.OBJECT // Return the result as Object
+        }, function (err, result) {
+            if (err) {
+                res.set('Content-Type', 'application/json');
+                res.status(500).send(JSON.stringify({
+                    status: 500,
+                    message: "Error getting the dba_tablespaces",
+                    detailed_message: err.message
+                }));
+            } else {
+                res.header('Access-Control-Allow-Origin', '*');
+                res.header('Access-Control-Allow-Headers', 'Content-Type');
+                res.header('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS');
+                res.contentType('application/json').status(200);
+                res.send(JSON.stringify(result.rows));
+                // console.log(JSON.stringify(result));
+            }
+            // Release the connection
+            connection.release(
+                function (err) {
+                    if (err) {
+                        console.error(err.message);
+                    } else {
+                        console.log("GET /sendTablespace : Connection released");
+                    }
+                });
+        });
+    });
+});
+
 
 app.listen(3001, function () {
     console.log("Puerto 3001");
