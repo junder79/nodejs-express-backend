@@ -13,6 +13,7 @@ app.use(fileUpload({
 oracledb.autoCommit = true;
 //Authoriser tous les requettes cors)
 var cors = require('cors');
+const { json } = require("body-parser");
 app.use(cors());
 
 app.use(bodyparser.json());
@@ -376,7 +377,7 @@ app.post('/agregarDepartamentos', function (req, res, next) {
             const { picture } = req.files;
             var nombreImagen = picture.name;
             picture.mv("./imagenes" + picture.name)
-
+            var acondicionado = req.body.acondicionados;
             // res.send({
             //     status:true,
             //     message:'Imagen subida'
@@ -387,65 +388,78 @@ app.post('/agregarDepartamentos', function (req, res, next) {
             var cantidadInt = parseInt(cantidad);
             var comunaInt = parseInt(comuna);
 
-            oracledb.getConnection(connAttrs, function (err, connection) {
-                if (err) {
-                    // Error al conectar
-                    res.set('Content-Type', 'application/json');
-                    res.status(500).send(JSON.stringify({
-                        status: 500,
-                        message: "Error al conectar a la base de datos",
-                        detailed_message: err.message
-                    }));
-                    return;
-                }
 
-                var bindvars = {
-                    p_out: { type: oracledb.STRING, dir: oracledb.BIND_OUT, maxSize: 200 }
-                };
-                connection.execute("BEGIN SP_CREAR_DEPARTAMENTO('" + descripcion + "',  '" + nombre + "', '" + direccion + "' , '" + valorInt + "' ,1,'" + cantidadInt + "','" + comunaInt + "' , :p_out); END;  ", bindvars, function (err, result) {
-                    if (err) {
-                        res.set('Content-Type', 'application/json');
-                        res.status(500).send(JSON.stringify({
-                            status: 500,
-                            message: "Error al Insertar",
-                            detailed_message: err.message
-                        }));
-                    } else {
-                        // res.status(200).send(JSON.stringify({
-                        //     status: 200,
-                        //     message: "Insertado",
-    
-                        // }));
-                        // var ultimaId = result.outBinds;
-                         // Insertar las Imagene
-                        connection.execute("BEGIN SP_INSERT_IMAGE(12,  'TEST'); END;", {}, {
-                            outFormat: oracledb.OBJECT // Return the result as Object
-                        }, function (err, result) {
-                            if (err) {
-                                // res.contentType('application/json').status(200);
-                                // res.send(JSON.stringify("Error al insertar Imagen"));
-                                console.log
-                            } else {
-                                res.contentType('application/json').status(200);
-                                res.send(JSON.stringify("Imagen Insertada"));
-                            }
-                           
-                        });
-                       
-                    }
+            async function insertarDepartamento() {
+
+                let connection;
+
+                try {
+                    connection = await oracledb.getConnection({
+                        user: "TEST3",
+                        password: "real",
+                        connectString: "localhost/orclpdb"
+                    });
+                    var bindvars = {
+                        p_out: { type: oracledb.STRING, dir: oracledb.BIND_OUT, maxSize: 200 }
+                    };
+                    // Insertar en Tabla Departamento
+                    const result = await connection.execute("BEGIN SP_CREAR_DEPARTAMENTO('" + descripcion + "',  '" + nombre + "', '" + direccion + "' , '" + valorInt + "' ,1,'" + cantidadInt + "','" + comunaInt + "' , :p_out); END;  ", bindvars);
+
+                    var idInsertado = parseInt(result.outBinds.p_out);
+
+                    // // Insertar en Tabla Imagen 
+                    const resultadoImagen  = await connection.execute("BEGIN SP_INSERT_IMAGE('"+idInsertado+"',  'TEST'); END;", {}, {
+                        outFormat: oracledb.OBJECT // Return the result as Object
+                    });
+
+                    // Insertar en Acondicionados
+                    console.log("Acondicionados JSON" + JSON.stringify(req.body.acondicionados));
+
+                    // Tranformar a lista 
+                    var acondicionadosArray = JSON.parse("[" + req.body.acondicionados + "]");;
+
+                    const list = acondicionadosArray; //...an array filled with values
+
+
                     
-                    // Release the connection
-                    connection.release(
-                        function (err) {
-                            if (err) {
-                                console.error(err.message);
-                            } else {
-                                console.log("Conexion Establecida");
-                            }
-                        });
-                });
-            });
+                    processArray([2, 3, 5]);
+                    function delay() {
+                        return new Promise();
+                      }
+                      
+                      async function delayedLog(item) {
+                        
+                        await delay();
+                        console.log(item);
+                      }
+                      async function processArray(array) {
+                        array.forEach(async (item) => {
+                            console.log("Elemento " +item);
+                            // await connection.execute(sql);
+                            // await sqls =  "BEGIN SP_INSERT_ACON(1,  '"+item+"'); END;";
+                       
+                        })
+                        console.log('Done!');
+                      }
+                      
+                    
+                   
 
+                } catch (err) {
+                    console.error(err);
+                    // Error al insertar alguna query de arriba
+                } finally {
+                    if (connection) {
+                        try {
+                            await connection.close();
+                        } catch (err) {
+                            console.error(err);
+                        }
+                    }
+                }
+            }
+
+            insertarDepartamento();
 
 
         }
@@ -453,6 +467,20 @@ app.post('/agregarDepartamentos', function (req, res, next) {
         res.status(500).send(error);
     }
 });
+
+async function insertImage(connection) {
+    connection.execute("BEGIN SP_INSERT_IMAGE(12,  'TEST'); END;", {}, {
+        outFormat: oracledb.OBJECT // Return the result as Object
+    }, function (err, result) {
+        if (err) {
+            console.log("Error al insertar" + err);
+        } else {
+            res.contentType('application/json').status(200);
+            res.send(JSON.stringify("Imagen Insertada"));
+        }
+
+    });
+}
 
 
 // Traer las regiones y comunas
