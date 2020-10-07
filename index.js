@@ -24,10 +24,16 @@ app.use(bodyparser.json());
 // }));
 
 
+
+
+// Traer las imagenes
+var publicDir = require('path').join(__dirname, '/imagenes');
+app.use(express.static(publicDir));
+
 var connAttrs = {
-    "user": "TEST3",
-    "password": "real",
-    "connectString": "(DESCRIPTION =(LOAD_BALANCE = ON)(FAILOVER = ON)(ADDRESS =(PROTOCOL = TCP)(HOST = LOCALHOST)(PORT = 1521))(ADDRESS = (PROTOCOL = TCP)(HOST = LOCALHOST )(PORT=1521))(CONNECT_DATA=(SERVICE_NAME=orclpdb)(FAILOVER_MODE=(TYPE=SELECT)(METHOD = BASIC))))"
+    "user": "SATUR",
+    "password": "bB2tV6fR1fG",
+    "connectString": "(DESCRIPTION =(LOAD_BALANCE = ON)(FAILOVER = ON)(ADDRESS =(PROTOCOL = TCP)(HOST = satur.docn.us)(PORT = 1521))(ADDRESS = (PROTOCOL = TCP)(HOST = satur.docn.us )(PORT=1521))(CONNECT_DATA=(SERVICE_NAME=str.docn.us)(FAILOVER_MODE=(TYPE=SELECT)(METHOD = BASIC))))"
 }
 
 // -------- VALIDAR AUTENTICACION USUARIOS --------------- //// 
@@ -50,9 +56,10 @@ app.post('/validarUsuario', function (req, res, next) {
             return;
         }
         var bindvars = {
-            p_out: { type: oracledb.STRING, dir: oracledb.BIND_OUT, maxSize: 200 }
+            p_out: { type: oracledb.STRING, dir: oracledb.BIND_OUT, maxSize: 200 },
+            p_out_t: { type: oracledb.STRING, dir: oracledb.BIND_OUT, maxSize: 200 }
         };
-        connection.execute("BEGIN SP_AUTENTIFICAR_USUARIOS('" + correo + "' ,'" + contrasena + "' ,:p_out); END;", bindvars
+        connection.execute("BEGIN SP_AUTENTIFICAR_USUARIOS('" + correo + "' ,'" + contrasena + "' ,:p_out , :p_out_t); END;", bindvars
             , function (err, result) {
                 if (err) {
                     res.header('Access-Control-Allow-Origin', '*');
@@ -67,7 +74,7 @@ app.post('/validarUsuario', function (req, res, next) {
                     res.header('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS');
                     res.contentType('application/json').status(200);
                     res.send(JSON.stringify(result.outBinds));
-
+                    console.log(JSON.stringify(result.outBinds));
 
                 }
                 // Release the connection
@@ -226,7 +233,7 @@ app.post('/eliminarUsuario', function (req, res, next) {
                 res.header('Access-Control-Allow-Headers', 'Content-Type');
                 res.header('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS');
                 res.contentType('application/json').status(200);
-                res.send(JSON.stringify("1"));
+                res.send(JSON.stringify(1));
 
 
             }
@@ -285,7 +292,7 @@ app.post('/agregarUsuario', function (req, res, next) {
                 res.header('Access-Control-Allow-Headers', 'Content-Type');
                 res.header('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS');
                 res.contentType('application/json').status(200);
-                res.send(JSON.stringify("1"));
+                res.send(JSON.stringify(1));
 
 
             }
@@ -407,43 +414,85 @@ app.post('/agregarDepartamentos', function (req, res, next) {
 
                     var idInsertado = parseInt(result.outBinds.p_out);
 
-                    // // Insertar en Tabla Imagen 
-                    const resultadoImagen  = await connection.execute("BEGIN SP_INSERT_IMAGE('"+idInsertado+"',  'TEST'); END;", {}, {
+                    var rutaImagen = "localhost/" + nombreImagen;
+                    // Insertar en Tabla Imagen 
+                    const resultadoImagen = await connection.execute("BEGIN SP_INSERT_IMAGE('" + idInsertado + "',  '" + rutaImagen + "'); END;", {}, {
                         outFormat: oracledb.OBJECT // Return the result as Object
                     });
 
-                    // Insertar en Acondicionados
-                    console.log("Acondicionados JSON" + JSON.stringify(req.body.acondicionados));
 
-                    // Tranformar a lista 
-                    var acondicionadosArray = JSON.parse("[" + req.body.acondicionados + "]");;
+                    // async function test() {
+                    //     for (let i = 0; i < 6; i++) {
+                    //         console.log('Before await for ', i);
 
-                    const list = acondicionadosArray; //...an array filled with values
+                    //         // console.log('After await. Value is ', result);
+                    //     }
 
-
-                    
-                    processArray([2, 3, 5]);
-                    function delay() {
-                        return new Promise();
+                    // }
+                    const fruitsToGet = ['apple', 'grape', 'pear'];
+                    // async function insertar(fruit) {
+                    //     await connection.execute("INSERT INTO t1(c1) VALUES('213');", {}, {
+                    //         outFormat: oracledb.OBJECT // Return the result as Object
+                    //     });
+                    // }
+                    const getNumFruit = fruit => {
+                        return connection.execute("INSERT INTO t1(c1) VALUES('213');", {}, {
+                            outFormat: oracledb.OBJECT // Return the result as Object
+                        });
                       }
+                    const forLoop = async _ => {
+                        console.log('Start')
                       
-                      async function delayedLog(item) {
-                        
-                        await delay();
-                        console.log(item);
-                      }
-                      async function processArray(array) {
-                        array.forEach(async (item) => {
-                            console.log("Elemento " +item);
-                            // await connection.execute(sql);
-                            // await sqls =  "BEGIN SP_INSERT_ACON(1,  '"+item+"'); END;";
-                       
-                        })
-                        console.log('Done!');
-                      }
+                        for (let index = 0; index < fruitsToGet.length; index++) {
+                          const fruit = fruitsToGet[index]
+                          const numFruit = await getNumFruit(fruit)
+                          console.log(numFruit)
+                        }
                       
-                    
-                   
+                        console.log('End')
+                      }
+                    forLoop();
+                    // test().then(_ => console.log('After test() resolved'));
+
+                    // console.log('After calling test');
+                    // res.header('Access-Control-Allow-Origin', '*');
+                    // res.header('Access-Control-Allow-Headers', 'Content-Type');
+                    // res.header('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS');
+                    // res.contentType('application/json').status(200);
+                    // res.send(JSON.stringify(1));
+                    // printFiles();
+                    // // Insertar en Acondicionados
+                    // console.log("Acondicionados JSON" + JSON.stringify(req.body.acondicionados));
+
+                    // // Tranformar a lista 
+                    // var acondicionadosArray = JSON.parse("[" + req.body.acondicionados + "]");;
+
+                    // const list = acondicionadosArray; //...an array filled with values
+
+
+
+                    // processArray([2, 3, 5]);
+                    // function delay() {
+                    //     return new Promise();
+                    //   }
+
+                    //   async function delayedLog(item) {
+
+                    //     await delay();
+                    //     console.log(item);
+                    //   }
+                    //   async function processArray(array) {
+                    //     array.forEach(async (item) => {
+                    //         console.log("Elemento " +item);
+                    //         // await connection.execute(sql);
+                    //         // await sqls =  "BEGIN SP_INSERT_ACON(1,  '"+item+"'); END;";
+
+                    //     })
+                    //     console.log('Done!');
+                    //   }
+
+
+
 
                 } catch (err) {
                     console.error(err);
@@ -468,19 +517,52 @@ app.post('/agregarDepartamentos', function (req, res, next) {
     }
 });
 
-async function insertImage(connection) {
-    connection.execute("BEGIN SP_INSERT_IMAGE(12,  'TEST'); END;", {}, {
-        outFormat: oracledb.OBJECT // Return the result as Object
-    }, function (err, result) {
-        if (err) {
-            console.log("Error al insertar" + err);
-        } else {
-            res.contentType('application/json').status(200);
-            res.send(JSON.stringify("Imagen Insertada"));
-        }
 
+app.get('/getDepartamentos', function (req, res) {
+    "use strict";
+
+    oracledb.getConnection(connAttrs, function (err, connection) {
+        if (err) {
+            // Error al conectar
+            res.set('Content-Type', 'application/json');
+            res.status(500).send(JSON.stringify({
+                status: 500,
+                message: "Error al conectar a la base de datos",
+                detailed_message: err.message
+            }));
+            return;
+        }
+        connection.execute("SELECT  descripciond, nombred, direcciond, valordepartamento, cantidadh from departamento", {}, {
+            outFormat: oracledb.OBJECT // Return the result as Object
+        }, function (err, result) {
+            if (err) {
+                res.set('Content-Type', 'application/json');
+                res.status(500).send(JSON.stringify({
+                    status: 500,
+                    message: "Error getting the dba_tablespaces",
+                    detailed_message: err.message
+                }));
+            } else {
+                res.header('Access-Control-Allow-Origin', '*');
+                res.header('Access-Control-Allow-Headers', 'Content-Type');
+                res.header('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS');
+                res.contentType('application/json').status(200);
+                res.send(JSON.stringify(result.rows));
+
+            }
+            // Release the connection
+            connection.release(
+                function (err) {
+                    if (err) {
+                        console.error(err.message);
+                    } else {
+                        console.log("GET /sendTablespace : Connection released");
+                    }
+                });
+        });
     });
-}
+});
+
 
 
 // Traer las regiones y comunas
@@ -561,6 +643,98 @@ app.get('/getComuna/:id', function (req, res) {
                 res.contentType('application/json').status(200);
                 res.send(JSON.stringify(result.rows));
                 // console.log(JSON.stringify(result));
+            }
+            // Release the connection
+            connection.release(
+                function (err) {
+                    if (err) {
+                        console.error(err.message);
+                    } else {
+                        console.log("GET /sendTablespace : Connection released");
+                    }
+                });
+        });
+    });
+});
+
+
+
+// TRAER LOS TOURS 
+app.get('/getTours', function (req, res) {
+    "use strict";
+
+    oracledb.getConnection(connAttrs, function (err, connection) {
+        if (err) {
+            // Error al conectar
+            res.set('Content-Type', 'application/json');
+            res.status(500).send(JSON.stringify({
+                status: 500,
+                message: "Error al conectar a la base de datos",
+                detailed_message: err.message
+            }));
+            return;
+        }
+        connection.execute("select iddetatour, lugartour, imagentour from detalletour", {}, {
+            outFormat: oracledb.OBJECT // Return the result as Object
+        }, function (err, result) {
+            if (err) {
+                res.set('Content-Type', 'application/json');
+                res.status(500).send(JSON.stringify({
+                    status: 500,
+                    message: "Error getting the dba_tablespaces",
+                    detailed_message: err.message
+                }));
+            } else {
+                res.header('Access-Control-Allow-Origin', '*');
+                res.header('Access-Control-Allow-Headers', 'Content-Type');
+                res.header('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS');
+                res.contentType('application/json').status(200);
+                res.send(JSON.stringify(result.rows));
+
+            }
+            // Release the connection
+            connection.release(
+                function (err) {
+                    if (err) {
+                        console.error(err.message);
+                    } else {
+                        console.log("GET /sendTablespace : Connection released");
+                    }
+                });
+        });
+    });
+});
+app.get('/detalleTour/:idtour', function (req, res) {
+    "use strict";
+
+    oracledb.getConnection(connAttrs, function (err, connection) {
+        if (err) {
+            // Error al conectar
+            res.set('Content-Type', 'application/json');
+            res.status(500).send(JSON.stringify({
+                status: 500,
+                message: "Error al conectar a la base de datos",
+                detailed_message: err.message
+            }));
+            return;
+        }
+        connection.execute("select iddetatour, lugartour, imagentour , descripciontour, valortour,horariot  , c.nombrecomuna, r.nombreregion from detalletour td  join comuna c  on c.idcomuna = td.comuna_idcomuna join region r  on r.idregion = c.region_idregion where iddetatour = 1", {}, {
+            outFormat: oracledb.OBJECT // Return the result as Object
+        }, function (err, result) {
+            if (err) {
+                res.set('Content-Type', 'application/json');
+                res.status(500).send(JSON.stringify({
+                    status: 500,
+                    message: "Error getting the dba_tablespaces",
+                    detailed_message: err.message
+                }));
+            } else {
+                res.header('Access-Control-Allow-Origin', '*');
+                res.header('Access-Control-Allow-Headers', 'Content-Type');
+                res.header('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS');
+                res.contentType('application/json').status(200);
+                res.send(JSON.stringify(result.rows));
+
             }
             // Release the connection
             connection.release(
