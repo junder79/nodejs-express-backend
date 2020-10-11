@@ -14,9 +14,13 @@
   "license": "ISC",
   "dependencies": {
     "body-parser": "^1.19.0",
+    "connect-busboy": "0.0.2",
     "cors": "^2.8.5",
     "express": "^4.17.1",
     "express-fileupload": "^1.2.0",
-    "oracledb": "^5.0.0"
+    "fs-extra": "^9.0.1",
+    "multer": "^1.4.2",
+    "oracledb": "^5.0.0",
+    "simple-oracledb": "^2.0.0"
   }
 }
