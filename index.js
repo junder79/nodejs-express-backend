@@ -530,7 +530,7 @@ app.post('/upload', function (req, res) {
     var valor = req.body.valor;
     var comuna = req.body.comuna;
     var cantidad = req.body.cantidad;
-    
+
     var acondicionado = req.body.acondicionados;
 
     // Convertir String a INT
@@ -686,12 +686,12 @@ app.post('/upload', function (req, res) {
 
         insertarAcondicionados(acondicionado, idInsertado);
 
-       
+
 
 
     })();
 
-    
+
 
 });
 app.get('/getDepartamentos', function (req, res) {
@@ -708,7 +708,7 @@ app.get('/getDepartamentos', function (req, res) {
             }));
             return;
         }
-        connection.execute("SELECT  descripciond, nombred, direcciond, valordepartamento, cantidadh from departamento", {}, {
+        connection.execute("SELECT iddepartamento, descripciond, nombred, direcciond, valordepartamento, cantidadh , (CASE WHEN activo = 1 THEN 'ACTIVO' ELSE 'INACTIVO' END) AS activo from departamento", {}, {
             outFormat: oracledb.OBJECT // Return the result as Object
         }, function (err, result) {
             if (err) {
@@ -745,8 +745,8 @@ app.post('/eliminarDepartamento', function (req, res, next) {
 
 
     var id = req.body.IDDEPARTAMENTO;
-
-
+    var idInt = parseInt(id);
+    console.log("ID " + idInt);
     oracledb.getConnection(connAttrs, function (err, connection) {
         if (err) {
             // Error al conectar
@@ -759,7 +759,7 @@ app.post('/eliminarDepartamento', function (req, res, next) {
             return;
         }
 
-        connection.execute("BEGIN SP_ELIMINAR_DEPARTAMENTO(" + id + "); END;", {}, {
+        connection.execute("BEGIN SP_ESTADO_DEPARTAMENTO(" + idInt + " , 1 ); END;", {}, {
             outFormat: oracledb.OBJECT // Return the result as Object
         }, function (err, result) {
             if (err) {
@@ -902,7 +902,7 @@ app.get('/getTours', function (req, res) {
             }));
             return;
         }
-        connection.execute("select iddetatour, lugartour, imagentour from detalletour", {}, {
+        connection.execute("select dt.iddetatour, dt.lugartour,  dt.valortour , dt.descripciontour, c.nombrecomuna , r.nombreregion , dt.horariot from detalletour dt join comuna c  on c.idcomuna = dt.comuna_idcomuna join region r on r.idregion = c.region_idregion", {}, {
             outFormat: oracledb.OBJECT // Return the result as Object
         }, function (err, result) {
             if (err) {
@@ -934,6 +934,7 @@ app.get('/getTours', function (req, res) {
 });
 app.get('/detalleTour/:idtour', function (req, res) {
     "use strict";
+    var regionId = req.params.idtour;
 
     oracledb.getConnection(connAttrs, function (err, connection) {
         if (err) {
@@ -946,7 +947,7 @@ app.get('/detalleTour/:idtour', function (req, res) {
             }));
             return;
         }
-        connection.execute("select iddetatour, lugartour, imagentour , descripciontour, valortour,horariot  , c.nombrecomuna, r.nombreregion from detalletour td  join comuna c  on c.idcomuna = td.comuna_idcomuna join region r  on r.idregion = c.region_idregion where iddetatour = 1", {}, {
+        connection.execute("select iddetatour, lugartour, imagentour , descripciontour, valortour,horariot  , c.nombrecomuna, r.nombreregion from detalletour td  join comuna c  on c.idcomuna = td.comuna_idcomuna join region r  on r.idregion = c.region_idregion where iddetatour =" + regionId + "  ", {}, {
             outFormat: oracledb.OBJECT // Return the result as Object
         }, function (err, result) {
             if (err) {
@@ -978,6 +979,171 @@ app.get('/detalleTour/:idtour', function (req, res) {
 });
 
 
-app.listen(3001, function () {
+// Subir las Imagenes del tour 
+
+
+app.post('/uploadImagen', function (req, res) {
+    console.log(req.files);
+
+    res.header('Access-Control-Allow-Origin', '*');
+    res.header('Access-Control-Allow-Headers', 'Content-Type');
+    res.header('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS');
+    res.contentType('application/json').status(200);
+    res.send(JSON.stringify(1));
+    req.files.file.mv("./imagen" + req.files.file.name)
+
+});
+
+app.post('/agregarTour', function (req, res) {
+    // console.log(req.files);
+
+    // res.header('Access-Control-Allow-Origin', '*');
+    // res.header('Access-Control-Allow-Headers', 'Content-Type');
+    // res.header('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS');
+    // res.contentType('application/json').status(200);
+    // res.send(JSON.stringify(1));
+    console.log(req.files.file.length);
+    var files = req.files.file;
+   
+    var lugar = req.body.lugar;
+    var descripcion = req.body.descripcion;
+    var valor = req.body.valor;
+    var comuna = req.body.comuna;
+    var fecha = req.body.fecha;
+
+    var comunaInt = parseInt(comuna);
+    var valorInt = parseInt(valor);
+
+    async function insertarDetalleTour() {
+
+        let connection;
+
+        try {
+            connection = await oracledb.getConnection({
+                user: "SATUR",
+                password: "bB2tV6fR1fG",
+                connectString: "satur.docn.us/str.docn.us"
+            });
+            var bindvars = {
+                p_out: { type: oracledb.STRING, dir: oracledb.BIND_OUT, maxSize: 200 }
+            };
+            // Insertar en Tabla Departamento
+            const result = await connection.execute("BEGIN SP_CREAR_DETALLE_TOUR('" + lugar + "', '" + descripcion + "' , '" + valorInt + "', '" + comunaInt + "' ,TO_DATE('" + fecha + "', 'yyyy-mm-dd hh24:mi:ss') , :p_out); END;", bindvars);
+
+            var idInsertado = parseInt(result.outBinds.p_out);
+            console.log("Ultima id" + idInsertado);
+
+
+
+
+
+
+        } catch (err) {
+            console.error(err);
+
+            // Error al insertar alguna query de arriba
+        } finally {
+
+            if (connection) {
+                try {
+                    await connection.close();
+                } catch (err) {
+                    console.error(err);
+                }
+            }
+            return idInsertado;
+        }
+
+    }
+
+    (async function () {
+        const idInsertado = await insertarDetalleTour();
+        async function insertarImagenTour(idInsertado) {
+
+
+            // Mover las Imagenes 
+            var imagenArray = [];
+            for (var i = 0; i < files.length; i++) {
+                console.log("TEST");
+                req.files.file[i].mv("tour-" + req.files.file[i].name)
+
+                var obj = {};
+
+                obj['imagen'] = req.files.file[i].name;
+                obj['id'] = idInsertado;
+
+
+                imagenArray.push(obj);
+
+
+            }
+
+
+            let connection;
+            console.log("Entro a la funcion" + idInsertado);
+   
+
+
+            try {
+                connection = await oracledb.getConnection({
+                    user: "SATUR",
+                    password: "bB2tV6fR1fG",
+                    connectString: "satur.docn.us/str.docn.us"
+                });
+
+
+
+                const sql = `BEGIN
+                SP_INSERTAR_IMAGEN_TOUR(:imagen,:id);
+             END;`;
+
+
+                const options = {
+                    // autoCommit: true,
+                    bindDefs: {
+                        imagen: { type: oracledb.STRING, maxSize: 200 },
+                        id: { type: oracledb.NUMBER },
+                    }
+                };
+                console.log("INSERTANDO LAS IMAGENES" + JSON.stringify(imagenArray));
+                
+                let result = await connection.executeMany(sql, imagenArray, options);
+
+
+
+                console.log("IMAGENES INSERTADAS");
+
+                res.header('Access-Control-Allow-Origin', '*');
+                res.header('Access-Control-Allow-Headers', 'Content-Type');
+                res.header('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS');
+                res.contentType('application/json').status(200);
+                res.send(JSON.stringify(1));
+            } catch (err) {
+                console.error(err);
+            } finally {
+                if (connection) {
+                    try {
+                        await connection.close();
+                    } catch (err) {
+                        console.error(err);
+                    }
+                }
+            }
+        }
+
+        insertarImagenTour(idInsertado);
+
+
+
+
+    })();
+
+
+
+});
+
+
+app.listen(3001, 'localhost', function () {
     console.log("Puerto 3001");
 });
+
