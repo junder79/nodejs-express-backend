@@ -33,7 +33,7 @@ var connAttrs = {
 
 // -------- VALIDAR AUTENTICACION USUARIOS --------------- //// 
 
-app.post('/validarUsuario', function (req, res, next) {
+app.post('/api/validarUsuario', function (req, res, next) {
 
 
     var correo = req.body.correo;
@@ -97,7 +97,7 @@ app.post('/validarUsuario', function (req, res, next) {
 
 
 ///// --------------- TRAER USUARIOS ---------------------- ///
-app.get('/usuarios', function (req, res) {
+app.get('/api/usuarios', function (req, res) {
     "use strict";
 
     oracledb.getConnection(connAttrs, function (err, connection) {
@@ -145,7 +145,7 @@ app.get('/usuarios', function (req, res) {
 
 // Traer Usuario especifico 
 
-app.get('/getCliente', function (req, res) {
+app.get('/api/getCliente', function (req, res) {
     "use strict";
     var usuariosId = 1;
 
@@ -160,7 +160,7 @@ app.get('/getCliente', function (req, res) {
             }));
             return;
         }
-        connection.execute("SELECT idusuario, nombreusuario, apellidousuario, contrasenausuario, correousuario, telefonousuario , rutusuario from usuarios  where idusuario = "+usuariosId+" ", {}, {
+        connection.execute("SELECT idusuario, nombreusuario, apellidousuario, contrasenausuario, correousuario, telefonousuario , rutusuario from usuarios  where idusuario = " + usuariosId + " ", {}, {
             outFormat: oracledb.OBJECT // Return the result as Object
         }, function (err, result) {
             if (err) {
@@ -191,7 +191,7 @@ app.get('/getCliente', function (req, res) {
     });
 });
 // ACTUALIZAR USUARIOS
-app.post('/updateUsuario', function (req, res, next) {
+app.post('/api/updateUsuario', function (req, res, next) {
 
 
     var motdepasse = req.body.motdepasse;
@@ -249,7 +249,7 @@ app.post('/updateUsuario', function (req, res, next) {
 
 // ELIMINAR USUARIOS 
 
-app.post('/eliminarUsuario', function (req, res, next) {
+app.post('/api/eliminarUsuario', function (req, res, next) {
 
 
 
@@ -303,7 +303,7 @@ app.post('/eliminarUsuario', function (req, res, next) {
 
 // AGREGAR USUARIO 
 
-app.post('/agregarCliente', function (req, res, next) {
+app.post('/api/agregarCliente', function (req, res, next) {
 
 
 
@@ -362,19 +362,19 @@ app.post('/agregarCliente', function (req, res, next) {
 
 
 
-app.post('/modificarCliente', function (req, res, next) {
+app.post('/api/modificarCliente', function (req, res, next) {
 
 
 
 
- 
+
     var nombre = req.body.nombre;
     var apellido = req.body.apellido;
     var correo = req.body.email;
     var telefono = req.body.telefono;
     var contrasena = req.body.contrasena;
     var idUsuario = req.body.id;
-    console.log("DATOS"+JSON.stringify(req.body));
+    console.log("DATOS" + JSON.stringify(req.body));
     var tipo = 1;
     oracledb.getConnection(connAttrs, function (err, connection) {
         if (err) {
@@ -425,7 +425,7 @@ app.post('/modificarCliente', function (req, res, next) {
 
 // Listar Acondicionados
 
-app.get('/getAcondicionados', function (req, res) {
+app.get('/api/getAcondicionados', function (req, res) {
     "use strict";
 
     oracledb.getConnection(connAttrs, function (err, connection) {
@@ -470,7 +470,7 @@ app.get('/getAcondicionados', function (req, res) {
     });
 });
 
-app.get('/getAcondicionados/:iddepartamento', function (req, res) {
+app.get('/api/getAcondicionados/:iddepartamento', function (req, res) {
     "use strict";
     var idDepartamento = req.params.iddepartamento;
     oracledb.getConnection(connAttrs, function (err, connection) {
@@ -521,7 +521,7 @@ app.get('/getAcondicionados/:iddepartamento', function (req, res) {
 
 
 
-app.post('/upload', function (req, res) {
+app.post('/api/upload', function (req, res) {
     console.log(req.files.foto[0].name);
 
 
@@ -694,7 +694,7 @@ app.post('/upload', function (req, res) {
 
 
 });
-app.get('/getDepartamentos', function (req, res) {
+app.get('/api/getDepartamentos', function (req, res) {
     "use strict";
 
     oracledb.getConnection(connAttrs, function (err, connection) {
@@ -740,7 +740,7 @@ app.get('/getDepartamentos', function (req, res) {
 });
 
 // Eliminar Departamento
-app.post('/eliminarDepartamento', function (req, res, next) {
+app.post('/api/eliminarDepartamento', function (req, res, next) {
 
 
 
@@ -792,7 +792,7 @@ app.post('/eliminarDepartamento', function (req, res, next) {
 
 });
 
-app.get('/getImagesDepartament/:iddepartamento', function (req, res) {
+app.get('/api/getImagesDepartament/:iddepartamento', function (req, res) {
     "use strict";
     var idDepartamento = req.params.iddepartamento;
     oracledb.getConnection(connAttrs, function (err, connection) {
@@ -839,7 +839,7 @@ app.get('/getImagesDepartament/:iddepartamento', function (req, res) {
 
 // Traer las regiones y comunas
 
-app.get('/getRegiones', function (req, res) {
+app.get('/api/getRegiones', function (req, res) {
     "use strict";
 
     oracledb.getConnection(connAttrs, function (err, connection) {
@@ -884,7 +884,7 @@ app.get('/getRegiones', function (req, res) {
     });
 });
 
-app.get('/getComuna/:id', function (req, res) {
+app.get('/api/getComuna/:id', function (req, res) {
     "use strict";
     var regionId = req.params.id;
     oracledb.getConnection(connAttrs, function (err, connection) {
@@ -932,7 +932,7 @@ app.get('/getComuna/:id', function (req, res) {
 
 
 // TRAER LOS TOURS 
-app.get('/getTours/:id', function (req, res) {
+app.get('/api/getTours/:id', function (req, res) {
     "use strict";
     var idComuna = req.params.id;
     oracledb.getConnection(connAttrs, function (err, connection) {
@@ -978,7 +978,7 @@ app.get('/getTours/:id', function (req, res) {
 });
 
 
-app.get('/detalleTourImagen/:idtour', function (req, res) {
+app.get('/api/detalleTourImagen/:idtour', function (req, res) {
     "use strict";
     var tourId = req.params.idtour;
 
@@ -1023,7 +1023,7 @@ app.get('/detalleTourImagen/:idtour', function (req, res) {
         });
     });
 });
-app.get('/detalleTour/:idtour', function (req, res) {
+app.get('/api/detalleTour/:idtour', function (req, res) {
     "use strict";
     var tourId = req.params.idtour;
 
@@ -1068,7 +1068,7 @@ app.get('/detalleTour/:idtour', function (req, res) {
         });
     });
 });
-app.get('/getTransporte/:id', function (req, res) {
+app.get('/api/getTransporte/:id', function (req, res) {
     "use strict";
     var idComuna = req.params.id;
     oracledb.getConnection(connAttrs, function (err, connection) {
@@ -1082,7 +1082,7 @@ app.get('/getTransporte/:id', function (req, res) {
             }));
             return;
         }
-        connection.execute("SELECT IDVEHICULO, NOMBREC,APELLIDOC,PATENTE,MODELO,MARCA,TIPOVEHICULO_IDTIPOV FROM VEHICULO WHERE COMUNA_IDCOMUNA =" + idComuna + "  ", {}, {
+        connection.execute("SELECT ve.idvehiculo, ve.nombrec, ve.apellidoc, ve.patente, ve.modelo, ve.marca, ve.tipovehiculo_idtipov , ve.comuna_idcomuna, vi.direccion, vi.valor, vi.id from vehiculo ve  join viajes vi on vi.vehiculo_idvehiculo = ve.idvehiculo where  ve.comuna_idcomuna = " + idComuna + " ", {}, {
             outFormat: oracledb.OBJECT // Return the result as Object
         }, function (err, result) {
             if (err) {
@@ -1112,7 +1112,7 @@ app.get('/getTransporte/:id', function (req, res) {
         });
     });
 });
-app.get('/departamentoimagen/:idDepartamento', function (req, res) {
+app.get('/api/departamentoimagen/:idDepartamento', function (req, res) {
     "use strict";
     var departamentoId = req.params.idDepartamento;
 
@@ -1158,7 +1158,7 @@ app.get('/departamentoimagen/:idDepartamento', function (req, res) {
     });
 });
 
-app.get('/getInfodepartamento/:idDepartamento', function (req, res) {
+app.get('/api/getInfodepartamento/:idDepartamento', function (req, res) {
     "use strict";
     var departamentoId = req.params.idDepartamento;
 
@@ -1205,7 +1205,7 @@ app.get('/getInfodepartamento/:idDepartamento', function (req, res) {
 });
 
 
-app.get('/getInfoacondicionado/:idDepartamento', function (req, res) {
+app.get('/api/getInfoacondicionado/:idDepartamento', function (req, res) {
     "use strict";
     var departamentoId = req.params.idDepartamento;
 
@@ -1251,7 +1251,7 @@ app.get('/getInfoacondicionado/:idDepartamento', function (req, res) {
     });
 });
 
-app.get('/getReservas', function (req, res) {
+app.get('/api/getReservas', function (req, res) {
     "use strict";
     var departamentoId = req.params.idDepartamento;
 
@@ -1299,7 +1299,7 @@ app.get('/getReservas', function (req, res) {
 // Subir las Imagenes del tour 
 
 
-app.post('/uploadImagen', function (req, res) {
+app.post('/api/uploadImagen', function (req, res) {
     console.log(req.files);
 
     res.header('Access-Control-Allow-Origin', '*');
@@ -1316,14 +1316,14 @@ const Transbank = require('transbank-sdk');
 //   Transbank.Configuration.forTestingWebpayPlusNormal()
 // ).getNormalTransaction();
 
-app.post('/pagar', function (req, res) {
+app.post('/api/pagar', function (req, res) {
 
 
 
 
 });
 
-app.post('/agregarTour', function (req, res) {
+app.post('/api/agregarTour', function (req, res) {
 
 
     var files = req.files.file;
@@ -1468,7 +1468,7 @@ app.post('/agregarTour', function (req, res) {
 
 // Crear Reserva 
 
-app.post('/crearreserva', function (req, res, next) {
+app.post('/api/crearreserva', function (req, res, next) {
 
 
 
