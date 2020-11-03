@@ -33,7 +33,7 @@ var connAttrs = {
 
 // -------- VALIDAR AUTENTICACION USUARIOS --------------- //// 
 
-app.post('/api/validarUsuario', function (req, res, next) {
+app.post('/validarUsuario', function (req, res, next) {
 
 
     var correo = req.body.correo;
@@ -97,7 +97,7 @@ app.post('/api/validarUsuario', function (req, res, next) {
 
 
 ///// --------------- TRAER USUARIOS ---------------------- ///
-app.get('/api/usuarios', function (req, res) {
+app.get('/usuarios', function (req, res) {
     "use strict";
 
     oracledb.getConnection(connAttrs, function (err, connection) {
@@ -145,7 +145,7 @@ app.get('/api/usuarios', function (req, res) {
 
 // Traer Usuario especifico 
 
-app.get('/api/getCliente', function (req, res) {
+app.get('/getCliente', function (req, res) {
     "use strict";
     var usuariosId = 1;
 
@@ -191,7 +191,7 @@ app.get('/api/getCliente', function (req, res) {
     });
 });
 // ACTUALIZAR USUARIOS
-app.post('/api/updateUsuario', function (req, res, next) {
+app.post('/updateUsuario', function (req, res, next) {
 
 
     var motdepasse = req.body.motdepasse;
@@ -249,7 +249,7 @@ app.post('/api/updateUsuario', function (req, res, next) {
 
 // ELIMINAR USUARIOS 
 
-app.post('/api/eliminarUsuario', function (req, res, next) {
+app.post('/eliminarUsuario', function (req, res, next) {
 
 
 
@@ -303,7 +303,7 @@ app.post('/api/eliminarUsuario', function (req, res, next) {
 
 // AGREGAR USUARIO 
 
-app.post('/api/agregarCliente', function (req, res, next) {
+app.post('/agregarCliente', function (req, res, next) {
 
 
 
@@ -362,7 +362,7 @@ app.post('/api/agregarCliente', function (req, res, next) {
 
 
 
-app.post('/api/modificarCliente', function (req, res, next) {
+app.post('/modificarCliente', function (req, res, next) {
 
 
 
@@ -425,7 +425,7 @@ app.post('/api/modificarCliente', function (req, res, next) {
 
 // Listar Acondicionados
 
-app.get('/api/getAcondicionados', function (req, res) {
+app.get('/getAcondicionados', function (req, res) {
     "use strict";
 
     oracledb.getConnection(connAttrs, function (err, connection) {
@@ -470,7 +470,7 @@ app.get('/api/getAcondicionados', function (req, res) {
     });
 });
 
-app.get('/api/getAcondicionados/:iddepartamento', function (req, res) {
+app.get('/getAcondicionados/:iddepartamento', function (req, res) {
     "use strict";
     var idDepartamento = req.params.iddepartamento;
     oracledb.getConnection(connAttrs, function (err, connection) {
@@ -521,7 +521,7 @@ app.get('/api/getAcondicionados/:iddepartamento', function (req, res) {
 
 
 
-app.post('/api/upload', function (req, res) {
+app.post('/upload', function (req, res) {
     console.log(req.files.foto[0].name);
 
 
@@ -694,7 +694,7 @@ app.post('/api/upload', function (req, res) {
 
 
 });
-app.get('/api/getDepartamentos', function (req, res) {
+app.get('/getDepartamentos', function (req, res) {
     "use strict";
 
     oracledb.getConnection(connAttrs, function (err, connection) {
@@ -740,7 +740,7 @@ app.get('/api/getDepartamentos', function (req, res) {
 });
 
 // Eliminar Departamento
-app.post('/api/eliminarDepartamento', function (req, res, next) {
+app.post('/eliminarDepartamento', function (req, res, next) {
 
 
 
@@ -792,7 +792,7 @@ app.post('/api/eliminarDepartamento', function (req, res, next) {
 
 });
 
-app.get('/api/getImagesDepartament/:iddepartamento', function (req, res) {
+app.get('/getImagesDepartament/:iddepartamento', function (req, res) {
     "use strict";
     var idDepartamento = req.params.iddepartamento;
     oracledb.getConnection(connAttrs, function (err, connection) {
@@ -839,7 +839,7 @@ app.get('/api/getImagesDepartament/:iddepartamento', function (req, res) {
 
 // Traer las regiones y comunas
 
-app.get('/api/getRegiones', function (req, res) {
+app.get('/getRegiones', function (req, res) {
     "use strict";
 
     oracledb.getConnection(connAttrs, function (err, connection) {
@@ -884,7 +884,7 @@ app.get('/api/getRegiones', function (req, res) {
     });
 });
 
-app.get('/api/getComuna/:id', function (req, res) {
+app.get('/getComuna/:id', function (req, res) {
     "use strict";
     var regionId = req.params.id;
     oracledb.getConnection(connAttrs, function (err, connection) {
@@ -932,7 +932,7 @@ app.get('/api/getComuna/:id', function (req, res) {
 
 
 // TRAER LOS TOURS 
-app.get('/api/getTours/:id', function (req, res) {
+app.get('/getTours/:id', function (req, res) {
     "use strict";
     var idComuna = req.params.id;
     oracledb.getConnection(connAttrs, function (err, connection) {
@@ -978,7 +978,7 @@ app.get('/api/getTours/:id', function (req, res) {
 });
 
 
-app.get('/api/detalleTourImagen/:idtour', function (req, res) {
+app.get('/detalleTourImagen/:idtour', function (req, res) {
     "use strict";
     var tourId = req.params.idtour;
 
@@ -1023,7 +1023,7 @@ app.get('/api/detalleTourImagen/:idtour', function (req, res) {
         });
     });
 });
-app.get('/api/detalleTour/:idtour', function (req, res) {
+app.get('/detalleTour/:idtour', function (req, res) {
     "use strict";
     var tourId = req.params.idtour;
 
@@ -1068,7 +1068,7 @@ app.get('/api/detalleTour/:idtour', function (req, res) {
         });
     });
 });
-app.get('/api/getTransporte/:id', function (req, res) {
+app.get('/getTransporte/:id', function (req, res) {
     "use strict";
     var idComuna = req.params.id;
     oracledb.getConnection(connAttrs, function (err, connection) {
@@ -1112,7 +1112,7 @@ app.get('/api/getTransporte/:id', function (req, res) {
         });
     });
 });
-app.get('/api/departamentoimagen/:idDepartamento', function (req, res) {
+app.get('/departamentoimagen/:idDepartamento', function (req, res) {
     "use strict";
     var departamentoId = req.params.idDepartamento;
 
@@ -1158,7 +1158,7 @@ app.get('/api/departamentoimagen/:idDepartamento', function (req, res) {
     });
 });
 
-app.get('/api/getInfodepartamento/:idDepartamento', function (req, res) {
+app.get('/getInfodepartamento/:idDepartamento', function (req, res) {
     "use strict";
     var departamentoId = req.params.idDepartamento;
 
@@ -1205,7 +1205,7 @@ app.get('/api/getInfodepartamento/:idDepartamento', function (req, res) {
 });
 
 
-app.get('/api/getInfoacondicionado/:idDepartamento', function (req, res) {
+app.get('/getInfoacondicionado/:idDepartamento', function (req, res) {
     "use strict";
     var departamentoId = req.params.idDepartamento;
 
@@ -1251,9 +1251,9 @@ app.get('/api/getInfoacondicionado/:idDepartamento', function (req, res) {
     });
 });
 
-app.get('/api/getReservas', function (req, res) {
+app.get('/getReservas/:idUsuario', function (req, res) {
     "use strict";
-    var departamentoId = req.params.idDepartamento;
+    var idUsuario = req.params.idUsuario;
 
     oracledb.getConnection(connAttrs, function (err, connection) {
         if (err) {
@@ -1266,7 +1266,151 @@ app.get('/api/getReservas', function (req, res) {
             }));
             return;
         }
-        connection.execute("SELECT idreserva , fechainicioreserva, fechaterminoreserva, montototalreserva, usuarios_idusuario,departamento_iddepartamento, estador_idestado from reservas where usuarios_idusuario = 1 ", {}, {
+        connection.execute("SELECT r.idreserva , TO_CHAR( r.fechainicioreserva, 'yyyy/mm/dd') as fechainicioreserva , TO_CHAR( r.fechaterminoreserva , 'yyyy/mm/dd') as fechaterminoreserva  , r.montototalreserva , r.usuarios_idusuario,r.departamento_iddepartamento, r.estador_idestado , er.estadoreserva , id.rutaimagen ,d.descripciond,d.nombred  from reservas r  join estadoreserva er on er.idestado = r.estador_idestado join imagendepa id on id.departamento_iddepartamento = r.departamento_iddepartamento join departamento d  on d.iddepartamento = r.departamento_iddepartamento where usuarios_idusuario = " + idUsuario + " group by r.idreserva , r.fechainicioreserva, r.fechaterminoreserva, r.montototalreserva, r.usuarios_idusuario,r.departamento_iddepartamento, r.estador_idestado , er.estadoreserva,id.rutaimagen,d.descripciond ,d.nombred   ", {}, {
+            outFormat: oracledb.OBJECT // Return the result as Object
+        }, function (err, result) {
+            if (err) {
+                res.set('Content-Type', 'application/json');
+                res.status(500).send(JSON.stringify({
+                    status: 500,
+                    message: "Error getting the dba_tablespaces",
+                    detailed_message: err.message
+                }));
+            } else {
+                res.header('Access-Control-Allow-Origin', '*');
+                res.header('Access-Control-Allow-Headers', 'Content-Type');
+                res.header('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS');
+                res.contentType('application/json').status(200);
+                res.send(JSON.stringify(result.rows));
+
+            }
+            // Release the connection
+            connection.release(
+                function (err) {
+                    if (err) {
+                        console.error(err.message);
+                    } else {
+                        console.log("GET /sendTablespace : Connection released");
+                    }
+                });
+        });
+    });
+});
+app.get('/reservaespecifica/:idreserva', function (req, res) {
+    "use strict";
+    var idReserva = req.params.idreserva;
+
+    oracledb.getConnection(connAttrs, function (err, connection) {
+        if (err) {
+            // Error al conectar
+            res.set('Content-Type', 'application/json');
+            res.status(500).send(JSON.stringify({
+                status: 500,
+                message: "Error al conectar a la base de datos",
+                detailed_message: err.message
+            }));
+            return;
+        }
+        connection.execute("SELECT r.idreserva , TO_CHAR( r.fechainicioreserva, 'yyyy/mm/dd') as fechainicioreserva , TO_CHAR( r.fechaterminoreserva , 'yyyy/mm/dd') as fechaterminoreserva , r.valoranticipado , r.montototalreserva ,r.departamento_iddepartamento, r.estador_idestado , er.estadoreserva ,d.descripciond,d.nombred  from reservas r   join estadoreserva er   on er.idestado = r.estador_idestado    join departamento d    on d.iddepartamento = r.departamento_iddepartamento   where r.idreserva  =" + idReserva + " ", {}, {
+            outFormat: oracledb.OBJECT // Return the result as Object
+        }, function (err, result) {
+            if (err) {
+                res.set('Content-Type', 'application/json');
+                res.status(500).send(JSON.stringify({
+                    status: 500,
+                    message: "Error getting the dba_tablespaces",
+                    detailed_message: err.message
+                }));
+            } else {
+                res.header('Access-Control-Allow-Origin', '*');
+                res.header('Access-Control-Allow-Headers', 'Content-Type');
+                res.header('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS');
+                res.contentType('application/json').status(200);
+                res.send(JSON.stringify(result.rows));
+
+            }
+            // Release the connection
+            connection.release(
+                function (err) {
+                    if (err) {
+                        console.error(err.message);
+                    } else {
+                        console.log("GET /sendTablespace : Connection released");
+                    }
+                });
+        });
+    });
+});
+app.get('/tourreserva/:idreserva', function (req, res) {
+    "use strict";
+    var idReserva = req.params.idreserva;
+
+    oracledb.getConnection(connAttrs, function (err, connection) {
+        if (err) {
+            // Error al conectar
+            res.set('Content-Type', 'application/json');
+            res.status(500).send(JSON.stringify({
+                status: 500,
+                message: "Error al conectar a la base de datos",
+                detailed_message: err.message
+            }));
+            return;
+        }
+        connection.execute("select t.idtour , t.reservas_idreserva,dt.lugartour, dt.valortour , dt.horariot  from tour t  join detalletour dt     on dt.iddetatour = t.detalletour_iddetatour   where t.reservas_idreserva ="+idReserva+"  ", {}, {
+            outFormat: oracledb.OBJECT // Return the result as Object
+        }, function (err, result) {
+            if (err) {
+                res.set('Content-Type', 'application/json');
+                res.status(500).send(JSON.stringify({
+                    status: 500,
+                    message: "Error getting the dba_tablespaces",
+                    detailed_message: err.message
+                }));
+            } else {
+                res.header('Access-Control-Allow-Origin', '*');
+                res.header('Access-Control-Allow-Headers', 'Content-Type');
+                res.header('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS');
+                res.contentType('application/json').status(200);
+                var cantidadFilas =JSON.stringify(result.rows.length); 
+                console.log("cantidad filas" + JSON.stringify(result.rows.length) )
+                if (cantidadFilas > 0) {
+                    res.send(JSON.stringify(result.rows));
+                } else {
+                    res.send(JSON.stringify(0));
+                    console.log("Hay 0 filas");
+                }
+
+
+            }
+            // Release the connection
+            connection.release(
+                function (err) {
+                    if (err) {
+                        console.error(err.message);
+                    } else {
+                        console.log("GET /sendTablespace : Connection released");
+                    }
+                });
+        });
+    });
+});
+app.get('/transportereserva/:idreserva', function (req, res) {
+    "use strict";
+    var idReserva = req.params.idreserva;
+
+    oracledb.getConnection(connAttrs, function (err, connection) {
+        if (err) {
+            // Error al conectar
+            res.set('Content-Type', 'application/json');
+            res.status(500).send(JSON.stringify({
+                status: 500,
+                message: "Error al conectar a la base de datos",
+                detailed_message: err.message
+            }));
+            return;
+        }
+        connection.execute("select t.idtransporte, t.horario, t.fechaservicio , v.direccion , v.valor ,t.reservas_idreserva from transporte t  join viajes v   on v.id = t.viajes_id  join vehiculo ve  on ve.idvehiculo = v.vehiculo_idvehiculo  where t.reservas_idreserva= "+idReserva+" ", {}, {
+       
             outFormat: oracledb.OBJECT // Return the result as Object
         }, function (err, result) {
             if (err) {
@@ -1299,7 +1443,15 @@ app.get('/api/getReservas', function (req, res) {
 // Subir las Imagenes del tour 
 
 
-app.post('/api/uploadImagen', function (req, res) {
+const Transbank = require('transbank-sdk');
+
+const transaction = new Transbank.Webpay(
+  Transbank.Configuration.forTestingWebpayPlusNormal()
+).getNormalTransaction();
+
+
+
+app.post('/uploadImagen', function (req, res) {
     console.log(req.files);
 
     res.header('Access-Control-Allow-Origin', '*');
@@ -1310,20 +1462,15 @@ app.post('/api/uploadImagen', function (req, res) {
     req.files.file.mv("./imagen" + req.files.file.name)
 
 });
-const Transbank = require('transbank-sdk');
 
-// const transaction = new Transbank.Webpay(
-//   Transbank.Configuration.forTestingWebpayPlusNormal()
-// ).getNormalTransaction();
-
-app.post('/api/pagar', function (req, res) {
+app.post('/pagar', function (req, res) {
 
 
 
 
 });
 
-app.post('/api/agregarTour', function (req, res) {
+app.post('/agregarTour', function (req, res) {
 
 
     var files = req.files.file;
@@ -1468,19 +1615,24 @@ app.post('/api/agregarTour', function (req, res) {
 
 // Crear Reserva 
 
-app.post('/api/crearreserva', function (req, res, next) {
+app.post('/crearreserva', function (req, res, next) {
 
 
-
+    console.log("DATOS " + JSON.stringify(req.body));
 
     var fechaInicio = req.body.fecha_inicio;
     var fechaTermino = req.body.fecha_termino;
     var montoTotal = req.body.monto_total;
     var valorAnticipado = req.body.valor_anticipado;
     var idUsuario = req.body.id_usuario;
-    var departamento = req.body.departamento_id;
+    var departamento = 1;
     var fechaActual = req.body.fecha_actual;
-
+    var tourId = req.body.tourId;
+    var estadoTour = req.body.estadoTour;
+    var estadoTransporte = req.body.estadoTransporte;
+    var transporteId = req.body.transporteId;
+    var fechaTransporte = req.body.fechaTransporte;
+    var horaTransporte = req.body.horaTransporte;
 
     // Convertir String a INT
     var montoTotalInt = parseInt(montoTotal);
@@ -1488,48 +1640,103 @@ app.post('/api/crearreserva', function (req, res, next) {
 
 
 
-    oracledb.getConnection(connAttrs, function (err, connection) {
-        if (err) {
-            // Error al conectar
-            res.set('Content-Type', 'application/json');
-            res.status(500).send(JSON.stringify({
-                status: 500,
-                message: "Error al conectar a la base de datos",
-                detailed_message: err.message
-            }));
-            return;
+
+    async function insertarReserva() {
+
+        let connection;
+
+        try {
+            connection = await oracledb.getConnection({
+                user: "SATUR",
+                password: "bB2tV6fR1fG",
+                connectString: "satur.docn.us/str.docn.us"
+            });
+            var bindvars = {
+                p_out: { type: oracledb.STRING, dir: oracledb.BIND_OUT, maxSize: 200 }
+            };
+            // Insertar en Tabla Reserva
+            const result = await connection.execute("BEGIN SP_CREAR_RESERVA(TO_DATE('" + fechaInicio + "', 'yyyy/mm/dd') ,TO_DATE('" + fechaTermino + "' , 'yyyy/mm/dd')  , '" + montoTotalInt + "' ,'" + valorAnticipadoInt + "', '" + idUsuario + "' , TO_DATE('" + fechaActual + "', 'yyyy/mm/dd')  ,'" + departamento + "' ,1,:p_out); END;", bindvars);
+            var idInsertado = parseInt(result.outBinds.p_out);
+            console.log("Ultima id" + idInsertado);
+
+
+
+
+
+
+
+
+        } catch (err) {
+            console.error(err);
+
+            // Error al insertar alguna query de arriba
+        } finally {
+
+            if (connection) {
+                try {
+                    await connection.close();
+                } catch (err) {
+                    console.error(err);
+                }
+            }
+            return idInsertado;
+
         }
 
-        connection.execute("BEGIN SP_CREAR_RESERVA(TO_DATE('" + fechaInicio + "', 'yyyy/mm/dd') ,TO_DATE('" + fechaTermino + "' , 'yyyy/mm/dd')  , '" + montoTotalInt + "' ,'" + valorAnticipadoInt + "', '" + idUsuario + "' , TO_DATE('" + fechaActual + "', 'yyyy/mm/dd')  ,'" + departamento + "' ,1); END;", {}, {
-            outFormat: oracledb.OBJECT // Return the result as Object
-        }, function (err, result) {
-            if (err) {
-                res.header('Access-Control-Allow-Origin', '*');
-                res.header('Access-Control-Allow-Headers', 'Content-Type');
-                res.header('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS');
-                res.contentType('application/json').status(200);
-                res.send(JSON.stringify(err.message));
+    }
 
-            } else {
-                res.header('Access-Control-Allow-Origin', '*');
-                res.header('Access-Control-Allow-Headers', 'Content-Type');
-                res.header('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS');
-                res.contentType('application/json').status(200);
-                res.send(JSON.stringify(1));
 
+
+    (async () => {
+        const idReserva = await insertarReserva();
+        console.log("Se Insertar a las demas tablas de reservas");
+        try {
+            connection = await oracledb.getConnection({
+                user: "SATUR",
+                password: "bB2tV6fR1fG",
+                connectString: "satur.docn.us/str.docn.us"
+            });
+
+            // Insertar en Tabla Disponiblidad 
+            const result = await connection.execute("BEGIN SP_INSERT_DISP_DEPART(TO_DATE('" + fechaInicio + "', 'yyyy/mm/dd'),TO_DATE('" + fechaTermino + "', 'yyyy/mm/dd'),'" + departamento + "'); END;");
+
+            if (estadoTour == 1) {
+                // Insertar el Tour
+                const resultadoTour = await connection.execute("BEGIN SP_ASIGNAR_TOUR(to_date(sysdate,'yyyy/mm/dd hh24:mi:ss'),'" + tourId + "','" + idReserva + "'); END;");
+            }
+            if (estadoTransporte == 1) {
+                // Insertar el Transporte
+                const resultadoTransporte = await connection.execute("BEGIN SP_CREAR_TRANSPORTE(to_date('15:00:00','HH24:MI:SS'),TO_DATE('" + fechaTransporte + "', 'yyyy/mm/dd') ,to_date(sysdate,'yyyy/mm/dd hh24:mi:ss') ,'" + transporteId + "','" + idReserva + "'); END;");
 
             }
-            // Release the connection
-            connection.release(
-                function (err) {
-                    if (err) {
-                        console.error(err.message);
-                    } else {
-                        console.log("POST /sendTablespace : Connection released");
-                    }
-                });
-        });
-    });
+
+
+            res.header('Access-Control-Allow-Origin', '*');
+            res.header('Access-Control-Allow-Headers', 'Content-Type');
+            res.header('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS');
+            res.contentType('application/json').status(200);
+            res.send(JSON.stringify(1));
+
+
+
+
+
+        } catch (err) {
+            console.error(err);
+
+            // Error al insertar alguna query de arriba
+        } finally {
+
+            if (connection) {
+                try {
+                    await connection.close();
+                } catch (err) {
+                    console.error(err);
+                }
+            }
+
+        }
+    })();
 
 });
 
