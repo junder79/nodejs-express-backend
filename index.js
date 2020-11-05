@@ -327,7 +327,7 @@ app.post('/agregarCliente', function (req, res, next) {
             return;
         }
 
-        connection.execute("BEGIN SP_CREAR_USUARIOS('" + nombre + "', '" + apellido + "' , '" + contrasena + "' ,'" + correo + "', '" + telefono + "' , 1 ,'" + run + "'); END;", {}, {
+        connection.execute("BEGIN SP_CREAR_USUARIOS('" + nombre + "', '" + apellido + "' , '" + contrasena + "' ,'" + correo + "', '" + telefono + "' , 3 ,'" + run + "'); END;", {}, {
             outFormat: oracledb.OBJECT // Return the result as Object
         }, function (err, result) {
             if (err) {
@@ -1038,7 +1038,7 @@ app.get('/detalleTour/:idtour', function (req, res) {
             }));
             return;
         }
-        connection.execute("select dt.iddetatour, dt.lugartour,dt.descripciontour,dt.valortour,dt.comuna_idcomuna,dt.horariot, r.nombreregion , c.nombrecomuna from detalletour dt JOIN COMUNA c on c.idcomuna = dt.comuna_idcomuna JOIN REGION r on r.idregion = c.region_idregion  where dt.iddetatour = " + tourId + " ", {}, {
+        connection.execute("select dt.iddetatour, dt.lugartour,dt.descripciontour,dt.valortour,dt.comuna_idcomuna,to_char(dt.horariot,'HH:MI:SSAM') as horariot, r.nombreregion , c.nombrecomuna from detalletour dt JOIN COMUNA c on c.idcomuna = dt.comuna_idcomuna JOIN REGION r on r.idregion = c.region_idregion  where dt.iddetatour = " + tourId + " ", {}, {
             outFormat: oracledb.OBJECT // Return the result as Object
         }, function (err, result) {
             if (err) {
@@ -1356,7 +1356,7 @@ app.get('/tourreserva/:idreserva', function (req, res) {
             }));
             return;
         }
-        connection.execute("select t.idtour , t.reservas_idreserva,dt.lugartour, dt.valortour , dt.horariot  from tour t  join detalletour dt     on dt.iddetatour = t.detalletour_iddetatour   where t.reservas_idreserva ="+idReserva+"  ", {}, {
+        connection.execute("select t.idtour , t.reservas_idreserva,dt.lugartour, dt.valortour , dt.horariot  from tour t  join detalletour dt     on dt.iddetatour = t.detalletour_iddetatour   where t.reservas_idreserva =" + idReserva + "  ", {}, {
             outFormat: oracledb.OBJECT // Return the result as Object
         }, function (err, result) {
             if (err) {
@@ -1371,8 +1371,8 @@ app.get('/tourreserva/:idreserva', function (req, res) {
                 res.header('Access-Control-Allow-Headers', 'Content-Type');
                 res.header('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS');
                 res.contentType('application/json').status(200);
-                var cantidadFilas =JSON.stringify(result.rows.length); 
-                console.log("cantidad filas" + JSON.stringify(result.rows.length) )
+                var cantidadFilas = JSON.stringify(result.rows.length);
+                console.log("cantidad filas" + JSON.stringify(result.rows.length))
                 if (cantidadFilas > 0) {
                     res.send(JSON.stringify(result.rows));
                 } else {
@@ -1409,8 +1409,8 @@ app.get('/transportereserva/:idreserva', function (req, res) {
             }));
             return;
         }
-        connection.execute("select t.idtransporte, t.horario, t.fechaservicio , v.direccion , v.valor ,t.reservas_idreserva from transporte t  join viajes v   on v.id = t.viajes_id  join vehiculo ve  on ve.idvehiculo = v.vehiculo_idvehiculo  where t.reservas_idreserva= "+idReserva+" ", {}, {
-       
+        connection.execute("select t.idtransporte, t.horario, t.fechaservicio , v.direccion , v.valor ,t.reservas_idreserva from transporte t  join viajes v   on v.id = t.viajes_id  join vehiculo ve  on ve.idvehiculo = v.vehiculo_idvehiculo  where t.reservas_idreserva= " + idReserva + " ", {}, {
+
             outFormat: oracledb.OBJECT // Return the result as Object
         }, function (err, result) {
             if (err) {
@@ -1443,11 +1443,6 @@ app.get('/transportereserva/:idreserva', function (req, res) {
 // Subir las Imagenes del tour 
 
 
-const Transbank = require('transbank-sdk');
-
-const transaction = new Transbank.Webpay(
-  Transbank.Configuration.forTestingWebpayPlusNormal()
-).getNormalTransaction();
 
 
 
@@ -1466,7 +1461,68 @@ app.post('/uploadImagen', function (req, res) {
 app.post('/pagar', function (req, res) {
 
 
+    const Transbank = require('transbank-sdk');
 
+    const transaction = new Transbank.Webpay(
+        Transbank.Configuration.forTestingWebpayPlusNormal()
+    ).getNormalTransaction();
+
+    const amount = 1000;
+    // Identificador que será retornado en el callback de resultado:
+    const sessionId = '7771726';
+    // Identificador único de orden de compra:
+    const buyOrder = Math.round(Math.random() * 999999999);
+    const returnUrl = 'http://localhost:3001/return';
+    var finalUrl = 'http://localhost:3001/comprobante';
+
+    transaction.initTransaction(amount, buyOrder, sessionId, returnUrl, finalUrl)
+        .then((response) => {
+            const token = response.token;
+            const url = response.url;
+            res.send(response);
+        })
+        .catch((error) => {
+            console.log(error.toString())
+        });
+
+});
+app.post('/return', function (req, res) {
+
+    const Transbank = require('transbank-sdk');
+
+    const transaction = new Transbank.Webpay(
+        Transbank.Configuration.forTestingWebpayPlusNormal()
+    ).getNormalTransaction();
+
+    const token = req.body.token_ws;
+
+    console.log("Body " + token);
+
+    // transaction.getTransactionResult(token)
+    //     .then((response) => {
+    //         const output = response.detailOutput[0];
+    //         if (output.responseCode === 0) {
+    //             // La transacción se ha realizado correctamente
+    //         }
+    //     })
+    //     .catch((error) => {
+    //         console.log(error.toString())
+    //         // Cualquier error durante la transacción será recibido acá
+    //     });
+
+
+    // transaction.getTransactionResult(token)
+    //     .then((response) => {
+    //         const output = response.detailOutput[0];
+    //         if (output.responseCode === 0) {
+    //             // La transacción se ha realizado correctamente
+    //             console.log("Acá");
+    //         }
+    //     })
+    //     .catch((error) => {
+    //         console.log(error.toString())
+    //         // Cualquier error durante la transacción será recibido acá
+    //     });
 
 });
 
@@ -1660,8 +1716,9 @@ app.post('/crearreserva', function (req, res, next) {
             console.log("Ultima id" + idInsertado);
 
 
+            // Insertar en tabla Pago 
 
-
+            const resultadoPago = await connection.execute("BEGIN sp_agregar_pago('UUA87ANHAJYS' ,(TO_DATE(sysdate, 'dd/mm/yyyy hh24:mi:ss')),0,'" + idInsertado + "','" + valorAnticipadoInt + "','Pago Anticipado'); END;");
 
 
 
@@ -1740,6 +1797,111 @@ app.post('/crearreserva', function (req, res, next) {
 
 });
 
+// Peticion de Pago restante
+app.post('/pagorestante', function (req, res, next) {
+
+
+
+    var id = req.body.idReserva;
+    async function insertarPagoRestante(id) {
+
+        let connection;
+
+        try {
+            connection = await oracledb.getConnection({
+                user: "SATUR",
+                password: "bB2tV6fR1fG",
+                connectString: "satur.docn.us/str.docn.us"
+            });
+
+            // Insertar en Pago Restante
+            const result = await connection.execute("BEGIN sp_agregar_pago('UUA87ANHAJYS' ,(TO_DATE(sysdate, 'dd/mm/yyyy hh24:mi:ss')),1," + id + ",1,'Check In'); END;");
+
+
+
+            // Update Reserva
+
+            const resultadoPago = await connection.execute("UPDATE reservas set estador_idestado = 2 where idreserva = " + id + "");
+
+            res.header('Access-Control-Allow-Origin', '*');
+            res.header('Access-Control-Allow-Headers', 'Content-Type');
+            res.header('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS');
+            res.contentType('application/json').status(200);
+            res.send(JSON.stringify(1));
+
+
+
+        } catch (err) {
+            console.error(err);
+
+            // Error al insertar alguna query de arriba
+        } finally {
+
+            if (connection) {
+                try {
+                    await connection.close();
+                } catch (err) {
+                    console.error(err);
+                }
+            }
+
+
+        }
+
+    }
+    insertarPagoRestante(id);
+
+
+});
+app.get('/departamentoactivo/:lugar', function (req, res) {
+    var lugar = req.params.lugar;
+    console.log("lugar" + lugar);
+    var fechaInicio = req.body.fechaInicio;
+    var fechaTermino = req.body.fechaTermino;
+    oracledb.getConnection(connAttrs, function (err, connection) {
+        if (err) {
+            // Error al conectar
+            res.set('Content-Type', 'application/json');
+            res.status(500).send(JSON.stringify({
+                status: 500,
+                message: "Error al conectar a la base de datos",
+                detailed_message: err.message
+            }));
+            return;
+        }
+        connection.execute(" select d.iddepartamento, d.descripciond, d.nombred,d.direcciond, d.valordepartamento, d.comuna_idcomuna , d.activo , c.nombrecomuna , id.rutaimagen from departamento d   join comuna c   on c.idcomuna = d.comuna_idcomuna  join imagendepa id  on id.departamento_iddepartamento = d.iddepartamento  where c.nombrecomuna like '%"+lugar+"%' AND d.activo =1  group by d.iddepartamento, d.descripciond, d.nombred,d.direcciond, d.valordepartamento, d.comuna_idcomuna , d.activo , c.nombrecomuna , id.rutaimagen ", {}, {
+
+            outFormat: oracledb.OBJECT // Return the result as Object
+        }, function (err, result) {
+            if (err) {
+                res.set('Content-Type', 'application/json');
+                res.status(500).send(JSON.stringify({
+                    status: 500,
+                    message: "Error getting the dba_tablespaces",
+                    detailed_message: err.message
+                }));
+            } else {
+                res.header('Access-Control-Allow-Origin', '*');
+                res.header('Access-Control-Allow-Headers', 'Content-Type');
+                res.header('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS');
+                res.contentType('application/json').status(200);
+                res.send(JSON.stringify(result.rows));
+
+            }
+            // Release the connection
+            connection.release(
+                function (err) {
+                    if (err) {
+                        console.error(err.message);
+                    } else {
+                        console.log("GET /sendTablespace : Connection released");
+                    }
+                });
+        });
+    });
+
+
+});
 
 app.listen(3001, 'localhost', function () {
     console.log("Puerto 3001");
