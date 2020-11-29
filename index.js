@@ -3,8 +3,12 @@ var app = express();
 var router = express.Router();
 var bodyparser = require('body-parser');
 var oracledb = require('oracledb');
-// Subir archivos al servidor 
 
+// Controladores
+const WebpayPlusController = require('./controllers/WebpayNormalController')
+const UsuarioController = require('./controllers/UsuarioController.js');
+
+// Subir archivos al servidor 
 const fileUpload = require('express-fileupload');
 app.use(fileUpload());
 oracledb.autoCommit = true;
@@ -13,16 +17,20 @@ var cors = require('cors');
 const { json } = require("body-parser");
 app.use(cors());
 
-app.use(bodyparser.json());
+app.use(bodyparser.urlencoded({ extended: true }))
 
 ///Pour changer le format de la requete 
 // app.use(bodyparser.urlencoded({
 //     extended: true
 // }));
 
+// Peticiones transabank 
+const transactions = {}
+app.get("/webpay-normal/init", WebpayPlusController.init)
+app.post("/webpay-normal/response", WebpayPlusController.response)
+app.post("/webpay-normal/finish", WebpayPlusController.finish)
 
-
-
+app.set("view engine", "ejs")
 // Traer las imagenes
 app.use(express.static(__dirname + '/'));
 var connAttrs = {
@@ -33,395 +41,19 @@ var connAttrs = {
 
 // -------- VALIDAR AUTENTICACION USUARIOS --------------- //// 
 
-app.post('/api/validarUsuario', function (req, res, next) {
-
-
-    var correo = req.body.correo;
-    var contrasena = req.body.contrasena;
-
-    oracledb.getConnection(connAttrs, function (err, connection) {
-        if (err) {
-            // Error al conectar
-            res.set('Content-Type', 'application/json');
-            res.status(500).send(JSON.stringify({
-                status: 500,
-                message: "Error al conectar a la base de datos",
-                detailed_message: err.message
-            }));
-            return;
-        }
-        var bindvars = {
-            p_out: { type: oracledb.STRING, dir: oracledb.BIND_OUT, maxSize: 200 },
-            p_out_t: { type: oracledb.STRING, dir: oracledb.BIND_OUT, maxSize: 200 },
-            p_out_id: { type: oracledb.STRING, dir: oracledb.BIND_OUT, maxSize: 200 },
-            p_out_nombre: { type: oracledb.STRING, dir: oracledb.BIND_OUT, maxSize: 200 },
-            p_out_apellido: { type: oracledb.STRING, dir: oracledb.BIND_OUT, maxSize: 200 },
-            p_out_contrasena: { type: oracledb.STRING, dir: oracledb.BIND_OUT, maxSize: 200 },
-            p_out_telefono: { type: oracledb.STRING, dir: oracledb.BIND_OUT, maxSize: 200 },
-            p_out_rut: { type: oracledb.STRING, dir: oracledb.BIND_OUT, maxSize: 200 },
-            p_out_email: { type: oracledb.STRING, dir: oracledb.BIND_OUT, maxSize: 200 },
-        };
-        connection.execute("BEGIN SP_AUTENTIFICAR_CLIENTES('" + correo + "' ,'" + contrasena + "' ,:p_out , :p_out_t , :p_out_id ,:p_out_nombre ,:p_out_apellido , :p_out_contrasena ,  :p_out_telefono ,:p_out_rut , :p_out_email); END;", bindvars
-            , function (err, result) {
-                if (err) {
-                    res.header('Access-Control-Allow-Origin', '*');
-                    res.header('Access-Control-Allow-Headers', 'Content-Type');
-                    res.header('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS');
-                    res.contentType('application/json').status(200);
-                    res.send(JSON.stringify(err.message));
-
-                } else {
-                    res.header('Access-Control-Allow-Origin', '*');
-                    res.header('Access-Control-Allow-Headers', 'Content-Type');
-                    res.header('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS');
-                    res.contentType('application/json').status(200);
-                    res.send(JSON.stringify(result.outBinds));
-                    console.log(JSON.stringify(result.outBinds));
-
-                }
-                // Release the connection
-                connection.release(
-                    function (err) {
-                        if (err) {
-                            console.error(err.message);
-                        } else {
-                            console.log("POST /sendTablespace : Connection released");
-                        }
-                    });
-            });
-    });
-
-});
-
-
-
-
+app.post('/api/validarUsuario',UsuarioController.autenticacionUsuario);
 ///// --------------- TRAER USUARIOS ---------------------- ///
-app.get('/api/usuarios', function (req, res) {
-    "use strict";
+app.get('/api/usuarios', UsuarioController.getUsuarios);
+app.get('/api/getCliente', UsuarioController.getUsuarioEspecifico);
+app.post('/api/updateUsuario',UsuarioController.usuarioUpdate);
+app.post('/api/eliminarUsuario',UsuarioController.usuarioDelete);
 
-    oracledb.getConnection(connAttrs, function (err, connection) {
-        if (err) {
-            // Error al conectar
-            res.set('Content-Type', 'application/json');
-            res.status(500).send(JSON.stringify({
-                status: 500,
-                message: "Error al conectar a la base de datos",
-                detailed_message: err.message
-            }));
-            return;
-        }
-        connection.execute("SELECT * FROM usuarios", {}, {
-            outFormat: oracledb.OBJECT // Return the result as Object
-        }, function (err, result) {
-            if (err) {
-                res.set('Content-Type', 'application/json');
-                res.status(500).send(JSON.stringify({
-                    status: 500,
-                    message: "Error getting the dba_tablespaces",
-                    detailed_message: err.message
-                }));
-            } else {
-                res.header('Access-Control-Allow-Origin', '*');
-                res.header('Access-Control-Allow-Headers', 'Content-Type');
-                res.header('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS');
-                res.contentType('application/json').status(200);
-                res.send(JSON.stringify(result.rows));
-                // console.log(JSON.stringify(result));
-            }
-            // Release the connection
-            connection.release(
-                function (err) {
-                    if (err) {
-                        console.error(err.message);
-                    } else {
-                        console.log("GET /sendTablespace : Connection released");
-                    }
-                });
-        });
-    });
-});
+// AGREGAR Cliente 
+
+app.post('/api/agregarCliente', UsuarioController.agregarCliente);
+app.post('/api/modificarCliente', UsuarioController.updateCliente);
 
 
-// Traer Usuario especifico 
-
-app.get('/api/getCliente', function (req, res) {
-    "use strict";
-    var usuariosId = 1;
-
-    oracledb.getConnection(connAttrs, function (err, connection) {
-        if (err) {
-            // Error al conectar
-            res.set('Content-Type', 'application/json');
-            res.status(500).send(JSON.stringify({
-                status: 500,
-                message: "Error al conectar a la base de datos",
-                detailed_message: err.message
-            }));
-            return;
-        }
-        connection.execute("SELECT idusuario, nombreusuario, apellidousuario, contrasenausuario, correousuario, telefonousuario , rutusuario from usuarios  where idusuario = " + usuariosId + " ", {}, {
-            outFormat: oracledb.OBJECT // Return the result as Object
-        }, function (err, result) {
-            if (err) {
-                res.set('Content-Type', 'application/json');
-                res.status(500).send(JSON.stringify({
-                    status: 500,
-                    message: "Error getting the dba_tablespaces",
-                    detailed_message: err.message
-                }));
-            } else {
-                res.header('Access-Control-Allow-Origin', '*');
-                res.header('Access-Control-Allow-Headers', 'Content-Type');
-                res.header('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS');
-                res.contentType('application/json').status(200);
-                res.send(JSON.stringify(result.rows));
-
-            }
-            // Release the connection
-            connection.release(
-                function (err) {
-                    if (err) {
-                        console.error(err.message);
-                    } else {
-                        console.log("GET /sendTablespace : Connection released");
-                    }
-                });
-        });
-    });
-});
-// ACTUALIZAR USUARIOS
-app.post('/api/updateUsuario', function (req, res, next) {
-
-
-    var motdepasse = req.body.motdepasse;
-    var DefaultTBS = req.body.DefaultTBS;
-    var id = req.body.IDUSUARIO;
-    var nombre = req.body.NOMBREUSUARIO;
-    var apellido = req.body.APELLIDOUSUARIO;
-    var correo = req.body.CORREOUSUARIO;
-    var telefono = req.body.TELEFONOUSUARIO;
-
-    oracledb.getConnection(connAttrs, function (err, connection) {
-        if (err) {
-            // Error al conectar
-            res.set('Content-Type', 'application/json');
-            res.status(500).send(JSON.stringify({
-                status: 500,
-                message: "Error al conectar a la base de datos",
-                detailed_message: err.message
-            }));
-            return;
-        }
-
-        connection.execute("BEGIN SP_MODIFICAR_USUARIO(" + id + ", '" + nombre + "','" + apellido + "','" + correo + "','" + telefono + "'); END;", {}, {
-            outFormat: oracledb.OBJECT // Return the result as Object
-        }, function (err, result) {
-            if (err) {
-                res.header('Access-Control-Allow-Origin', '*');
-                res.header('Access-Control-Allow-Headers', 'Content-Type');
-                res.header('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS');
-                res.contentType('application/json').status(200);
-                res.send(JSON.stringify(err.message + " " + motdepasse));
-
-            } else {
-                res.header('Access-Control-Allow-Origin', '*');
-                res.header('Access-Control-Allow-Headers', 'Content-Type');
-                res.header('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS');
-                res.contentType('application/json').status(200);
-                res.send(JSON.stringify("1"));
-
-
-            }
-            // Release the connection
-            connection.release(
-                function (err) {
-                    if (err) {
-                        console.error(err.message);
-                    } else {
-                        console.log("POST /sendTablespace : Connection released");
-                    }
-                });
-        });
-    });
-
-});
-
-// ELIMINAR USUARIOS 
-
-app.post('/api/eliminarUsuario', function (req, res, next) {
-
-
-
-    var id = req.body.IDUSUARIO;
-
-
-    oracledb.getConnection(connAttrs, function (err, connection) {
-        if (err) {
-            // Error al conectar
-            res.set('Content-Type', 'application/json');
-            res.status(500).send(JSON.stringify({
-                status: 500,
-                message: "Error al conectar a la base de datos",
-                detailed_message: err.message
-            }));
-            return;
-        }
-
-        connection.execute("BEGIN SP_ELIMINAR_USUARIO(" + id + "); END;", {}, {
-            outFormat: oracledb.OBJECT // Return the result as Object
-        }, function (err, result) {
-            if (err) {
-                res.header('Access-Control-Allow-Origin', '*');
-                res.header('Access-Control-Allow-Headers', 'Content-Type');
-                res.header('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS');
-                res.contentType('application/json').status(200);
-                res.send(JSON.stringify(err.message));
-
-            } else {
-                res.header('Access-Control-Allow-Origin', '*');
-                res.header('Access-Control-Allow-Headers', 'Content-Type');
-                res.header('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS');
-                res.contentType('application/json').status(200);
-                res.send(JSON.stringify(1));
-
-
-            }
-            // Release the connection
-            connection.release(
-                function (err) {
-                    if (err) {
-                        console.error(err.message);
-                    } else {
-                        console.log("POST /sendTablespace : Connection released");
-                    }
-                });
-        });
-    });
-
-});
-
-// AGREGAR USUARIO 
-
-app.post('/api/agregarCliente', function (req, res, next) {
-
-
-
-
-    var run = req.body.rut;
-    var nombre = req.body.nombre;
-    var apellido = req.body.apellido;
-    var correo = req.body.email;
-    var telefono = req.body.telefono;
-    var contrasena = req.body.contrasena;
-
-    oracledb.getConnection(connAttrs, function (err, connection) {
-        if (err) {
-            // Error al conectar
-            res.set('Content-Type', 'application/json');
-            res.status(500).send(JSON.stringify({
-                status: 500,
-                message: "Error al conectar a la base de datos",
-                detailed_message: err.message
-            }));
-            return;
-        }
-
-        connection.execute("BEGIN SP_CREAR_USUARIOS('" + nombre + "', '" + apellido + "' , '" + contrasena + "' ,'" + correo + "', '" + telefono + "' , 3 ,'" + run + "'); END;", {}, {
-            outFormat: oracledb.OBJECT // Return the result as Object
-        }, function (err, result) {
-            if (err) {
-                res.header('Access-Control-Allow-Origin', '*');
-                res.header('Access-Control-Allow-Headers', 'Content-Type');
-                res.header('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS');
-                res.contentType('application/json').status(200);
-                res.send(JSON.stringify(err.message));
-
-            } else {
-                res.header('Access-Control-Allow-Origin', '*');
-                res.header('Access-Control-Allow-Headers', 'Content-Type');
-                res.header('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS');
-                res.contentType('application/json').status(200);
-                res.send(JSON.stringify(1));
-
-
-            }
-            // Release the connection
-            connection.release(
-                function (err) {
-                    if (err) {
-                        console.error(err.message);
-                    } else {
-                        console.log("POST /sendTablespace : Connection released");
-                    }
-                });
-        });
-    });
-
-});
-
-
-
-app.post('/api/modificarCliente', function (req, res, next) {
-
-
-
-
-
-    var nombre = req.body.nombre;
-    var apellido = req.body.apellido;
-    var correo = req.body.email;
-    var telefono = req.body.telefono;
-    var contrasena = req.body.contrasena;
-    var idUsuario = req.body.id;
-    console.log("DATOS" + JSON.stringify(req.body));
-    var tipo = 1;
-    oracledb.getConnection(connAttrs, function (err, connection) {
-        if (err) {
-            // Error al conectar
-            res.set('Content-Type', 'application/json');
-            res.status(500).send(JSON.stringify({
-                status: 500,
-                message: "Error al conectar a la base de datos",
-                detailed_message: err.message
-            }));
-            return;
-        }
-
-        connection.execute("BEGIN SP_MODIFICAR_USUARIO('" + idUsuario + "', '" + nombre + "' , '" + apellido + "' , '" + contrasena + "','" + correo + "', '" + telefono + "' , 1); END;", {}, {
-            outFormat: oracledb.OBJECT // Return the result as Object
-        }, function (err, result) {
-            if (err) {
-                res.header('Access-Control-Allow-Origin', '*');
-                res.header('Access-Control-Allow-Headers', 'Content-Type');
-                res.header('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS');
-                res.contentType('application/json').status(200);
-                res.send(JSON.stringify(err.message));
-
-            } else {
-                res.header('Access-Control-Allow-Origin', '*');
-                res.header('Access-Control-Allow-Headers', 'Content-Type');
-                res.header('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS');
-                res.contentType('application/json').status(200);
-                res.send(JSON.stringify(1));
-
-
-            }
-            // Release the connection
-            connection.release(
-                function (err) {
-                    if (err) {
-                        console.error(err.message);
-                    } else {
-                        console.log("POST /sendTablespace : Connection released");
-                    }
-                });
-        });
-    });
-
-});
-
-// AGREGAR ACONDICIONADO AL DEPARTAMENTO 
 
 // Listar Acondicionados
 
@@ -1467,64 +1099,24 @@ app.post('/api/pagar', function (req, res) {
         Transbank.Configuration.forTestingWebpayPlusNormal()
     ).getNormalTransaction();
 
-    const amount = 1000;
-    // Identificador que será retornado en el callback de resultado:
-    const sessionId = '7771726';
-    // Identificador único de orden de compra:
-    const buyOrder = Math.round(Math.random() * 999999999);
-    const returnUrl = 'http://localhost:3001/return';
-    var finalUrl = 'http://localhost:3001/comprobante';
-
-    transaction.initTransaction(amount, buyOrder, sessionId, returnUrl, finalUrl)
-        .then((response) => {
-            const token = response.token;
-            const url = response.url;
-            res.send(response);
-        })
-        .catch((error) => {
-            console.log(error.toString())
-        });
-
-});
-app.post('/api/return', function (req, res) {
-
-    const Transbank = require('transbank-sdk');
-
-    const transaction = new Transbank.Webpay(
+    let Webpay = new Transbank.Webpay(
         Transbank.Configuration.forTestingWebpayPlusNormal()
     ).getNormalTransaction();
-
-    const token = req.body.token_ws;
-
-    console.log("Body " + token);
-
-    // transaction.getTransactionResult(token)
-    //     .then((response) => {
-    //         const output = response.detailOutput[0];
-    //         if (output.responseCode === 0) {
-    //             // La transacción se ha realizado correctamente
-    //         }
-    //     })
-    //     .catch((error) => {
-    //         console.log(error.toString())
-    //         // Cualquier error durante la transacción será recibido acá
-    //     });
-
-
-    // transaction.getTransactionResult(token)
-    //     .then((response) => {
-    //         const output = response.detailOutput[0];
-    //         if (output.responseCode === 0) {
-    //             // La transacción se ha realizado correctamente
-    //             console.log("Acá");
-    //         }
-    //     })
-    //     .catch((error) => {
-    //         console.log(error.toString())
-    //         // Cualquier error durante la transacción será recibido acá
-    //     });
+    let url = "http://" + req.get("host")
+    let amount = req.body.total;
+    Webpay.initTransaction(
+        amount,
+        "Orden" + Math.round(Math.random() * 999999999),
+        req.sessionId,
+        url + "/webpay-normal/response",
+        url + "/webpay-normal/finish").then((data) => {
+            transactions[data.token] = { amount: amount }
+            res.render("redirect-transbank",
+                { url: data.url, token: data.token, inputName: "TBK_TOKEN" ,})
+        })
 
 });
+
 
 app.post('/api/agregarTour', function (req, res) {
 
@@ -1869,7 +1461,7 @@ app.get('/api/departamentoactivo/:lugar', function (req, res) {
             }));
             return;
         }
-        connection.execute(" select d.iddepartamento, d.descripciond, d.nombred,d.direcciond, d.valordepartamento, d.comuna_idcomuna , d.activo , c.nombrecomuna , id.rutaimagen from departamento d   join comuna c   on c.idcomuna = d.comuna_idcomuna  join imagendepa id  on id.departamento_iddepartamento = d.iddepartamento  where c.nombrecomuna like '%"+lugar+"%' AND d.activo =1  group by d.iddepartamento, d.descripciond, d.nombred,d.direcciond, d.valordepartamento, d.comuna_idcomuna , d.activo , c.nombrecomuna , id.rutaimagen ", {}, {
+        connection.execute(" select d.iddepartamento, d.descripciond, d.nombred,d.direcciond, d.valordepartamento, d.comuna_idcomuna , d.activo , c.nombrecomuna , id.rutaimagen from departamento d   join comuna c   on c.idcomuna = d.comuna_idcomuna  join imagendepa id  on id.departamento_iddepartamento = d.iddepartamento  where c.nombrecomuna like '%" + lugar + "%' AND d.activo =1  group by d.iddepartamento, d.descripciond, d.nombred,d.direcciond, d.valordepartamento, d.comuna_idcomuna , d.activo , c.nombrecomuna , id.rutaimagen ", {}, {
 
             outFormat: oracledb.OBJECT // Return the result as Object
         }, function (err, result) {
