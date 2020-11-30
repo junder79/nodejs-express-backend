@@ -1,27 +1,80 @@
 const Transbank = require("transbank-sdk")
-
-
+var oracledb = require('oracledb');
+var connAttrs = {
+  "user": "SATUR",
+  "password": "bB2tV6fR1fG",
+  "connectString": "(DESCRIPTION =(LOAD_BALANCE = ON)(FAILOVER = ON)(ADDRESS =(PROTOCOL = TCP)(HOST = satur.docn.us)(PORT = 1521))(ADDRESS = (PROTOCOL = TCP)(HOST = satur.docn.us )(PORT=1521))(CONNECT_DATA=(SERVICE_NAME=str.docn.us)(FAILOVER_MODE=(TYPE=SELECT)(METHOD = BASIC))))"
+}
 const transactions = {}
 
 class WebpayPlusController {
-  static init (req, res) {
+  static init(req, res) {
     const configuration = Transbank.Configuration.forTestingWebpayPlusNormal()
     let Webpay = new Transbank.Webpay(configuration).getNormalTransaction()
     let url = "http://" + req.get("host")
-    let amount = 1500
+    let amount = req.body.total;
+    let idReserva = req.body.idReserva;
+
+    async function insertarPago(tokenws) {
+      let conn;
+      try {
+        conn = await oracledb.getConnection(connAttrs);
+
+        console.log('Connected to database');
+
+        let lastId = await conn.execute(
+          'SELECT MAX(idpago) as "id" from pagos',
+          [],
+          {
+            outFormat: oracledb.OBJECT
+          });
+
+
+        console.log("Filas " + lastId.rows[0].id);
+        var idLast = lastId.rows[0].id;
+        if (idLast == null) {
+          var idLast = 1;
+
+        } else {
+          var idLast = idLast + 1;
+        }
+
+
+        let result = await conn.execute(
+          "INSERT INTO PAGOS VALUES (" + idLast + ",'" + tokenws + "',(TO_DATE(sysdate, 'dd/mm/yyyy hh24:mi:ss')),0,'" + idReserva + "','" + amount + "','Pago Anticipado')"
+
+        );
+        console.log("Insertadoi");
+      } catch (err) {
+        console.log('Error in processing', err);
+      } finally {
+        if (conn) { // conn assignment worked, need to close
+          try {
+            await conn.close();
+
+            console.log('Connection closed');
+          } catch (err) {
+            console.log('Error closing connection', err);
+          }
+        }
+      }
+
+    }
+
     Webpay.initTransaction(
       amount,
       "Orden" + 15552,
       req.sessionId,
       url + "/webpay-normal/response",
       url + "/webpay-normal/finish").then((data) => {
-      transactions[data.token] = { amount: amount }
-      res.render("redirect-transbank",
-        { url: data.url, token: data.token, inputName: "TBK_TOKEN" })
-    })
+        transactions[data.token] = { amount: amount }
+        insertarPago(data.token);
+        res.render("redirect-transbank",
+          { url: data.url, token: data.token, inputName: "TBK_TOKEN" })
+      })
   }
 
-  static response (req, res) {
+  static response(req, res) {
     // Esta inicialización que se repite, es mejor llevarla a nu lugar en donde
     // se pueda reutilizar. Por simplicidad, en este ejemplo está el código
     // duplicado en cada método
@@ -33,16 +86,47 @@ class WebpayPlusController {
 
     Webpay.getTransactionResult(token).then(response => {
       transactions[token] = response
+      var estadoTransaccion = response.detailOutput[0].responseCode;
+      async function updatePago(token_ws) {
+        let conn;
+        try {
+          conn = await oracledb.getConnection(connAttrs);
+
+          console.log('Connected to database');
+          let result = await conn.execute(
+            "UPDATE PAGOS set estadopago = 1 where tokenpago = '" + token_ws + "' "
+          );
+
+          console.log("Actualizado");
+        } catch (err) {
+          console.log('Error in processing', err);
+        } finally {
+          if (conn) { // conn assignment worked, need to close
+            try {
+              await conn.close();
+
+              console.log('Connection closed');
+            } catch (err) {
+              console.log('Error closing connection', err);
+            }
+          }
+        }
+
+      }
+      if (estadoTransaccion === 0) {
+
+        updatePago(token);
+      }
       res.render("redirect-transbank",
         { url: response.urlRedirection, token, inputName: "token_ws" }
-        
-        )
+
+      )
     }).catch((e) => {
       console.log(e)
       res.send("Error")
     })
   }
-  static finish (req, res) {
+  static finish(req, res) {
     let status = null;
     let transaction = null;
 

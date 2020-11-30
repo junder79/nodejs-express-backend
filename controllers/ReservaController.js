@@ -1,3 +1,9 @@
+var oracledb = require('oracledb');
+var connAttrs = {
+  "user": "SATUR",
+  "password": "bB2tV6fR1fG",
+  "connectString": "(DESCRIPTION =(LOAD_BALANCE = ON)(FAILOVER = ON)(ADDRESS =(PROTOCOL = TCP)(HOST = satur.docn.us)(PORT = 1521))(ADDRESS = (PROTOCOL = TCP)(HOST = satur.docn.us )(PORT=1521))(CONNECT_DATA=(SERVICE_NAME=str.docn.us)(FAILOVER_MODE=(TYPE=SELECT)(METHOD = BASIC))))"
+}
 class ReservaController {
     static crearReserva (req,res){
         console.log("DATOS " + JSON.stringify(req.body));
