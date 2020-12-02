@@ -30,6 +30,10 @@ app.post("/webpay-normal/init", WebpayPlusController.init)
 app.post("/webpay-normal/response", WebpayPlusController.response)
 app.post("/webpay-normal/finish", WebpayPlusController.finish)
 
+app.post("/webpay-normal/initRestante", WebpayPlusController.initRestante)
+app.post("/webpay-normal/responseRestante", WebpayPlusController.responseRestante)
+app.post("/webpay-normal/finishRestante", WebpayPlusController.finishRestante)
+
 app.set("view engine", "ejs")
 // Traer las imagenes
 app.use(express.static(__dirname + '/'));
