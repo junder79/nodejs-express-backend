@@ -14,6 +14,7 @@ class WebpayPlusController {
     let url = "http://" + req.get("host")
     let amount = req.body.total;
     let idReserva = req.body.idReserva;
+    let motivo = req.body.motivo;
 
     async function insertarPago(tokenws) {
       let conn;
@@ -41,7 +42,7 @@ class WebpayPlusController {
 
 
         let result = await conn.execute(
-          "INSERT INTO PAGOS VALUES (" + idLast + ",'" + tokenws + "',(TO_DATE(sysdate, 'dd/mm/yyyy hh24:mi:ss')),0,'" + idReserva + "','" + amount + "','Pago Anticipado')"
+          "INSERT INTO PAGOS VALUES (" + idLast + ",'" + tokenws + "',(TO_DATE(sysdate, 'dd/mm/yyyy hh24:mi:ss')),0,'" + idReserva + "','" + amount + "','"+motivo+"')"
 
         );
         console.log("Insertadoi");

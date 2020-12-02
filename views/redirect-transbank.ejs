@@ -9,7 +9,7 @@
 </head>
 <body>
 <form id="webpay-form" action="<%= url %>" method="post">
-    <input   name="<%= inputName %>" value="<%= token %>">
+    <input hidden  name="<%= inputName %>" value="<%= token %>">
 
 </form>
 <script>document.getElementById("webpay-form").submit();</script>
