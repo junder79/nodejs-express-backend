@@ -26,13 +26,13 @@ app.use(bodyparser.urlencoded({ extended: true }))
 
 // Peticiones transabank 
 const transactions = {}
-app.post("/api/webpay-normal/init", WebpayPlusController.init)
-app.post("/api/webpay-normal/response", WebpayPlusController.response)
-app.post("/api/webpay-normal/finish", WebpayPlusController.finish)
+app.post("/webpay-normal/init", WebpayPlusController.init)
+app.post("/webpay-normal/response", WebpayPlusController.response)
+app.post("/webpay-normal/finish", WebpayPlusController.finish)
 
-app.post("/api/webpay-normal/initRestante", WebpayPlusController.initRestante)
-app.post("/api/webpay-normal/responseRestante", WebpayPlusController.responseRestante)
-app.post("/api/webpay-normal/finishRestante", WebpayPlusController.finishRestante)
+app.post("/webpay-normal/initRestante", WebpayPlusController.initRestante)
+app.post("/webpay-normal/responseRestante", WebpayPlusController.responseRestante)
+app.post("/webpay-normal/finishRestante", WebpayPlusController.finishRestante)
 
 app.set("view engine", "ejs")
 // Traer las imagenes
@@ -45,12 +45,12 @@ var connAttrs = {
 
 // -------- VALIDAR AUTENTICACION USUARIOS --------------- //// 
 
-app.post('/api/validarUsuario',UsuarioController.autenticacionUsuario);
+app.post('/api/validarUsuario', UsuarioController.autenticacionUsuario);
 ///// --------------- TRAER USUARIOS ---------------------- ///
 app.get('/api/usuarios', UsuarioController.getUsuarios);
 app.get('/api/getCliente', UsuarioController.getUsuarioEspecifico);
-app.post('/api/updateUsuario',UsuarioController.usuarioUpdate);
-app.post('/api/eliminarUsuario',UsuarioController.usuarioDelete);
+app.post('/api/updateUsuario', UsuarioController.usuarioUpdate);
+app.post('/api/eliminarUsuario', UsuarioController.usuarioDelete);
 
 // AGREGAR Cliente 
 
@@ -1116,7 +1116,7 @@ app.post('/api/pagar', function (req, res) {
         url + "/webpay-normal/finish").then((data) => {
             transactions[data.token] = { amount: amount }
             res.render("redirect-transbank",
-                { url: data.url, token: data.token, inputName: "TBK_TOKEN" , idReserva:1})
+                { url: data.url, token: data.token, inputName: "TBK_TOKEN", idReserva: 1 })
         })
 
 });
@@ -1267,8 +1267,8 @@ app.post('/api/agregarTour', function (req, res) {
 
 // Crear Reserva 
 
-app.post('/api/crearreserva', function (req,res){
-    
+app.post('/api/crearreserva', function (req, res) {
+
     var fechaInicio = req.body.fecha_inicio;
     var fechaTermino = req.body.fecha_termino;
     var montoTotal = req.body.monto_total;
@@ -1309,7 +1309,7 @@ app.post('/api/crearreserva', function (req,res){
             console.log("Ultima id" + idInsertado);
 
 
-            
+
 
 
 
@@ -1363,7 +1363,7 @@ app.post('/api/crearreserva', function (req,res){
             res.header('Access-Control-Allow-Headers', 'Content-Type');
             res.header('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS');
             res.contentType('application/json').status(200);
-            res.send(JSON.stringify({respuestaReserva:1 ,lastId:idReserva }));
+            res.send(JSON.stringify({ respuestaReserva: 1, lastId: idReserva }));
 
 
 
@@ -1443,8 +1443,14 @@ app.post('/api/pagorestante', function (req, res, next) {
 
 
 });
+function capitalize(word) {
+    return word[0].toUpperCase() + word.slice(1);
+}
 app.get('/api/departamentoactivo/:lugar', function (req, res) {
-    var lugar = req.params.lugar;
+    var lugar = capitalize(req.params.lugar);
+    if (lugar == "Viña del mar") {
+        lugar = "Viña del Mar";
+    }
     console.log("lugar" + lugar);
     var fechaInicio = req.body.fechaInicio;
     var fechaTermino = req.body.fechaTermino;
@@ -1459,7 +1465,7 @@ app.get('/api/departamentoactivo/:lugar', function (req, res) {
             }));
             return;
         }
-        connection.execute(" select d.iddepartamento, d.descripciond, d.nombred,d.direcciond, d.valordepartamento, d.comuna_idcomuna , d.activo , c.nombrecomuna , id.rutaimagen from departamento d   join comuna c   on c.idcomuna = d.comuna_idcomuna  join imagendepa id  on id.departamento_iddepartamento = d.iddepartamento  where c.nombrecomuna like '%" + lugar + "%' AND d.activo =1  group by d.iddepartamento, d.descripciond, d.nombred,d.direcciond, d.valordepartamento, d.comuna_idcomuna , d.activo , c.nombrecomuna , id.rutaimagen ", {}, {
+        connection.execute(" select d.iddepartamento, d.descripciond, d.nombred,d.direcciond, d.valordepartamento, d.comuna_idcomuna , d.activo , c.nombrecomuna , id.rutaimagen  from departamento d   join comuna c   on c.idcomuna = d.comuna_idcomuna    join imagendepa id  on id.departamento_iddepartamento = d.iddepartamento  JOIN region r   on r.idregion = c.region_idregion where (c.nombrecomuna like '%" + lugar + "%' OR r.nombreregion like '%" + lugar + "%')   AND d.activo =1   group by d.iddepartamento, d.descripciond, d.nombred,d.direcciond, d.valordepartamento, d.comuna_idcomuna , d.activo , c.nombrecomuna , id.rutaimagen  ", {}, {
 
             outFormat: oracledb.OBJECT // Return the result as Object
         }, function (err, result) {
