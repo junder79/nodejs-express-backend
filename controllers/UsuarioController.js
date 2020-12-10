@@ -1,8 +1,14 @@
+var oracledb = require('oracledb');
+var connAttrs = {
+  "user": "SATUR",
+  "password": "bB2tV6fR1fG",
+  "connectString": "(DESCRIPTION =(LOAD_BALANCE = ON)(FAILOVER = ON)(ADDRESS =(PROTOCOL = TCP)(HOST = satur.docn.us)(PORT = 1521))(ADDRESS = (PROTOCOL = TCP)(HOST = satur.docn.us )(PORT=1521))(CONNECT_DATA=(SERVICE_NAME=str.docn.us)(FAILOVER_MODE=(TYPE=SELECT)(METHOD = BASIC))))"
+}
 class UsuarioController {
     static autenticacionUsuario(req, res) {
         var correo = req.body.correo;
         var contrasena = req.body.contrasena;
-
+        console.log("DATOS LOGIN" + JSON.stringify(req.body));
         oracledb.getConnection(connAttrs, function (err, connection) {
             if (err) {
                 // Error al conectar
@@ -312,7 +318,7 @@ class UsuarioController {
         var contrasena = req.body.contrasena;
         var idUsuario = req.body.id;
         console.log("DATOS" + JSON.stringify(req.body));
-        var tipo = 1;
+       
         oracledb.getConnection(connAttrs, function (err, connection) {
             if (err) {
                 // Error al conectar
@@ -325,7 +331,7 @@ class UsuarioController {
                 return;
             }
     
-            connection.execute("BEGIN SP_MODIFICAR_USUARIO('" + idUsuario + "', '" + nombre + "' , '" + apellido + "' , '" + contrasena + "','" + correo + "', '" + telefono + "' , 1); END;", {}, {
+            connection.execute("BEGIN SP_MODIFICAR_USUARIO('" + idUsuario + "', '" + nombre + "' , '" + apellido + "' , '" + contrasena + "','" + correo + "', '" + telefono + "' , 3); END;", {}, {
                 outFormat: oracledb.OBJECT // Return the result as Object
             }, function (err, result) {
                 if (err) {

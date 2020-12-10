@@ -1274,7 +1274,7 @@ app.post('/api/crearreserva', function (req,res){
     var montoTotal = req.body.monto_total;
     var valorAnticipado = req.body.valor_anticipado;
     var idUsuario = req.body.id_usuario;
-    var departamento = 1;
+    var departamento = req.body.departamento_id;
     var fechaActual = req.body.fecha_actual;
     var tourId = req.body.tourId;
     var estadoTour = req.body.estadoTour;

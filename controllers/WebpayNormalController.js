@@ -242,24 +242,24 @@ class WebpayPlusController {
         try {
           conn = await oracledb.getConnection(connAttrs);
 
-          console.log('Connected to database');
+          console.log('Connected to database' + token_ws);
           let result = await conn.execute(
             "UPDATE PAGOS set estadopago = 1 where tokenpago = '" + token_ws + "' "
           );
 
           let idReserva = await conn.execute(
-            "select reservas_idreserva as id from pagos where tokenpago = '"+token_ws+"' ",
+            "select reservas_idreserva as ID from pagos where tokenpago = '"+token_ws+"' ",
             [],
             {
               outFormat: oracledb.OBJECT
             });
   
   
-          console.log("FFilas " + idReserva.rows[0].id);
+          console.log("FFilas " + idReserva.rows[0].ID);
         
             // Update Reserva
 
-          resultadoPagoRestante = await connection.execute("UPDATE reservas set estador_idestado = 2 where idreserva = " + idReserva.rows[0].id + "");
+          let resultadoPagoRestante = await conn.execute("UPDATE reservas set estador_idestado = 2 where idreserva = " + idReserva.rows[0].ID + "");
 
           console.log("Actualizado");
         } catch (err) {
