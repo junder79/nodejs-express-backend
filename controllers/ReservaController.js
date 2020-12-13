@@ -50,7 +50,7 @@ class ReservaController {
     
                 // Insertar en tabla Pago 
     
-                const resultadoPago = await connection.execute("BEGIN sp_agregar_pago('UUA87ANHAJYS' ,(TO_DATE(sysdate, 'dd/mm/yyyy hh24:mi:ss')),0,'" + idInsertado + "','" + valorAnticipadoInt + "','Pago Anticipado'); END;");
+                const resultadoPago = await connection.execute("BEGIN sp_agregar_pago('UUA87ANHAJYS' ,(TO_DATE(sysdate, 'dd/mm/yyyy hh24:mi:ss')),0,'" + idInsertado + "','" + valorAnticipadoInt + "','Abono Reserva'); END;");
     
     
     

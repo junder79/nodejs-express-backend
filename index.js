@@ -1080,7 +1080,54 @@ app.get('/api/transportereserva/:idreserva', function (req, res) {
 
 
 
+app.post('/api/disponibilidaddepartamento', function (req, res) {
+    "use strict";
+    var idDepartamento = req.body.id_departamento;
+    var checkIn = req.body.fecha_inicio;
+    var checkOut = req.body.fecha_termino;
+    console.log("Datos " + JSON.stringify(req.body));
+    oracledb.getConnection(connAttrs, function (err, connection) {
+        if (err) {
+            // Error al conectar
+            res.set('Content-Type', 'application/json');
+            res.status(500).send(JSON.stringify({
+                status: 500,
+                message: "Error al conectar a la base de datos",
+                detailed_message: err.message
+            }));
+            return;
+        }
+        console.log("Conectado");
+        connection.execute("SELECT iddisponiblidad from dispodepart where fechainicioreserva between TO_DATE('"+checkIn+"','yyyy-mm-dd') and  TO_DATE('"+checkOut+"','yyyy-mm-dd') AND fechaterminoreserva between TO_DATE('"+checkIn+"','yyyy-mm-dd') and  TO_DATE('"+checkOut+"','yyyy-mm-dd') AND departamento_iddepartamento = "+idDepartamento+ " ", {}, {
+            outFormat: oracledb.OBJECT // Return the result as Object
+        }, function (err, result) {
+            if (err) {
+                res.set('Content-Type', 'application/json');
+                res.status(500).send(JSON.stringify({
+                    status: 500,
+                    message: "Error getting the dba_tablespaces",
+                    detailed_message: err.message
+                }));
+            } else {
+                res.header('Access-Control-Allow-Origin', '*');
+                res.header('Access-Control-Allow-Headers', 'Content-Type');
+                res.header('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS');
+                res.contentType('application/json').status(200);
+                res.send(JSON.stringify(result.rows));
 
+            }
+            // Release the connection
+            connection.release(
+                function (err) {
+                    if (err) {
+                        console.error(err.message);
+                    } else {
+                        console.log("GET /sendTablespace : Connection released");
+                    }
+                });
+        });
+    });
+});
 
 app.post('/api/uploadImagen', function (req, res) {
     console.log(req.files);
