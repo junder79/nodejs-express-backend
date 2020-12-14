@@ -1512,7 +1512,7 @@ app.get('/api/departamentoactivo/:lugar', function (req, res) {
             }));
             return;
         }
-        connection.execute(" select d.iddepartamento, d.descripciond, d.nombred,d.direcciond, d.valordepartamento, d.comuna_idcomuna , d.activo , c.nombrecomuna , id.rutaimagen  from departamento d   join comuna c   on c.idcomuna = d.comuna_idcomuna    join imagendepa id  on id.departamento_iddepartamento = d.iddepartamento  JOIN region r   on r.idregion = c.region_idregion where (c.nombrecomuna like '%" + lugar + "%' OR r.nombreregion like '%" + lugar + "%')   AND d.activo =1   group by d.iddepartamento, d.descripciond, d.nombred,d.direcciond, d.valordepartamento, d.comuna_idcomuna , d.activo , c.nombrecomuna , id.rutaimagen  ", {}, {
+        connection.execute("  select d.iddepartamento, d.descripciond, d.nombred,d.direcciond, d.valordepartamento, d.comuna_idcomuna , d.activo , c.nombrecomuna , (  SELECT  max(rutaimagen)     FROM    imagendepa   WHERE   departamento_iddepartamento =d.iddepartamento    ) as rutaimagen  from departamento d join comuna c   on c.idcomuna = d.comuna_idcomuna JOIN region r   on r.idregion = c.region_idregion where (c.nombrecomuna like '%"+lugar+"%' OR r.nombreregion like '%"+lugar+"%')   AND d.activo =1   group by d.iddepartamento, d.descripciond, d.nombred,d.direcciond, d.valordepartamento, d.comuna_idcomuna , d.activo , c.nombrecomuna   ", {}, {
 
             outFormat: oracledb.OBJECT // Return the result as Object
         }, function (err, result) {
