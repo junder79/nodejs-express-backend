@@ -26,13 +26,13 @@ app.use(bodyparser.urlencoded({ extended: true }))
 
 // Peticiones transabank 
 const transactions = {}
-app.post("/webpay-normal/init", WebpayPlusController.init)
-app.post("/webpay-normal/response", WebpayPlusController.response)
-app.post("/webpay-normal/finish", WebpayPlusController.finish)
+app.post("api/webpay-normal/init", WebpayPlusController.init)
+app.post("api/webpay-normal/response", WebpayPlusController.response)
+app.post("api/webpay-normal/finish", WebpayPlusController.finish)
 
-app.post("/webpay-normal/initRestante", WebpayPlusController.initRestante)
-app.post("/webpay-normal/responseRestante", WebpayPlusController.responseRestante)
-app.post("/webpay-normal/finishRestante", WebpayPlusController.finishRestante)
+app.post("api/webpay-normal/initRestante", WebpayPlusController.initRestante)
+app.post("api/webpay-normal/responseRestante", WebpayPlusController.responseRestante)
+app.post("api/webpay-normal/finishRestante", WebpayPlusController.finishRestante)
 
 app.set("view engine", "ejs")
 // Traer las imagenes
@@ -1513,6 +1513,99 @@ app.get('/api/departamentoactivo/:lugar', function (req, res) {
             return;
         }
         connection.execute(" select d.iddepartamento, d.descripciond, d.nombred,d.direcciond, d.valordepartamento, d.comuna_idcomuna , d.activo , c.nombrecomuna , id.rutaimagen  from departamento d   join comuna c   on c.idcomuna = d.comuna_idcomuna    join imagendepa id  on id.departamento_iddepartamento = d.iddepartamento  JOIN region r   on r.idregion = c.region_idregion where (c.nombrecomuna like '%" + lugar + "%' OR r.nombreregion like '%" + lugar + "%')   AND d.activo =1   group by d.iddepartamento, d.descripciond, d.nombred,d.direcciond, d.valordepartamento, d.comuna_idcomuna , d.activo , c.nombrecomuna , id.rutaimagen  ", {}, {
+
+            outFormat: oracledb.OBJECT // Return the result as Object
+        }, function (err, result) {
+            if (err) {
+                res.set('Content-Type', 'application/json');
+                res.status(500).send(JSON.stringify({
+                    status: 500,
+                    message: "Error getting the dba_tablespaces",
+                    detailed_message: err.message
+                }));
+            } else {
+                res.header('Access-Control-Allow-Origin', '*');
+                res.header('Access-Control-Allow-Headers', 'Content-Type');
+                res.header('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS');
+                res.contentType('application/json').status(200);
+                res.send(JSON.stringify(result.rows));
+
+            }
+            // Release the connection
+            connection.release(
+                function (err) {
+                    if (err) {
+                        console.error(err.message);
+                    } else {
+                        console.log("GET /sendTablespace : Connection released");
+                    }
+                });
+        });
+    });
+
+
+});
+
+app.get('/api/websiteinicial/', function (req, res) {
+   
+    oracledb.getConnection(connAttrs, function (err, connection) {
+        if (err) {
+            // Error al conectar
+            res.set('Content-Type', 'application/json');
+            res.status(500).send(JSON.stringify({
+                status: 500,
+                message: "Error al conectar a la base de datos",
+                detailed_message: err.message
+            }));
+            return;
+        }
+        connection.execute(" select d.iddepartamento, d.descripciond, d.nombred,d.direcciond, d.valordepartamento, d.comuna_idcomuna , d.activo , c.nombrecomuna , id.rutaimagen   from departamento d   join comuna c   on c.idcomuna = d.comuna_idcomuna    join imagendepa id  on id.departamento_iddepartamento = d.iddepartamento  JOIN region r   on r.idregion = c.region_idregion AND d.activo =1   group by d.iddepartamento, d.descripciond, d.nombred,d.direcciond, d.valordepartamento, d.comuna_idcomuna , d.activo , c.nombrecomuna , id.rutaimagen ", {}, {
+
+            outFormat: oracledb.OBJECT // Return the result as Object
+        }, function (err, result) {
+            if (err) {
+                res.set('Content-Type', 'application/json');
+                res.status(500).send(JSON.stringify({
+                    status: 500,
+                    message: "Error getting the dba_tablespaces",
+                    detailed_message: err.message
+                }));
+            } else {
+                res.header('Access-Control-Allow-Origin', '*');
+                res.header('Access-Control-Allow-Headers', 'Content-Type');
+                res.header('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS');
+                res.contentType('application/json').status(200);
+                res.send(JSON.stringify(result.rows));
+
+            }
+            // Release the connection
+            connection.release(
+                function (err) {
+                    if (err) {
+                        console.error(err.message);
+                    } else {
+                        console.log("GET /sendTablespace : Connection released");
+                    }
+                });
+        });
+    });
+
+
+});
+app.get('/api/toursinicial/', function (req, res) {
+   
+    oracledb.getConnection(connAttrs, function (err, connection) {
+        if (err) {
+            // Error al conectar
+            res.set('Content-Type', 'application/json');
+            res.status(500).send(JSON.stringify({
+                status: 500,
+                message: "Error al conectar a la base de datos",
+                detailed_message: err.message
+            }));
+            return;
+        }
+        connection.execute(" SELECT dt.lugartour,dt.descripciontour,dt.valortour , it.imagen from detalletour dt JOIN imagentour it  on it.detalletour_iddetatour = dt.iddetatour group by  dt.lugartour,dt.descripciontour,dt.valortour , it.imagen  ", {}, {
 
             outFormat: oracledb.OBJECT // Return the result as Object
         }, function (err, result) {
