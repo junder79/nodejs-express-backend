@@ -66,8 +66,8 @@ class WebpayPlusController {
       amount,
       "Orden" + 15552,
       req.sessionId,
-      url + "api/webpay-normal/response",
-      url + "api/webpay-normal/finish").then((data) => {
+      url + "/webpay-normal/response",
+      url + "/webpay-normal/finish").then((data) => {
         transactions[data.token] = { amount: amount }
         insertarPago(data.token);
         res.render("redirect-transbank",
@@ -215,8 +215,8 @@ class WebpayPlusController {
       amount,
       "Orden" + 15552,
       req.sessionId,
-      url + "api/webpay-normal/responseRestante",
-      url + "api/webpay-normal/finishRestante").then((data) => {
+      url + "/webpay-normal/responseRestante",
+      url + "/webpay-normal/finishRestante").then((data) => {
         transactions[data.token] = { amount: amount }
         insertarPago(data.token);
         res.render("redirect-transbank",

@@ -26,13 +26,13 @@ app.use(bodyparser.urlencoded({ extended: true }))
 
 // Peticiones transabank 
 const transactions = {}
-app.post("api/webpay-normal/init", WebpayPlusController.init)
-app.post("api/webpay-normal/response", WebpayPlusController.response)
-app.post("api/webpay-normal/finish", WebpayPlusController.finish)
+app.post("/webpay-normal/init", WebpayPlusController.init)
+app.post("/webpay-normal/response", WebpayPlusController.response)
+app.post("/webpay-normal/finish", WebpayPlusController.finish)
 
-app.post("api/webpay-normal/initRestante", WebpayPlusController.initRestante)
-app.post("api/webpay-normal/responseRestante", WebpayPlusController.responseRestante)
-app.post("api/webpay-normal/finishRestante", WebpayPlusController.finishRestante)
+app.post("/webpay-normal/initRestante", WebpayPlusController.initRestante)
+app.post("/webpay-normal/responseRestante", WebpayPlusController.responseRestante)
+app.post("/webpay-normal/finishRestante", WebpayPlusController.finishRestante)
 
 app.set("view engine", "ejs")
 // Traer las imagenes
@@ -1385,6 +1385,7 @@ app.post('/api/crearreserva', function (req, res) {
     (async () => {
         const idReserva = await insertarReserva();
         console.log("Se Insertar a las demas tablas de reservas");
+        console.log("ID TOUR A INSERTAR " + tourId);
         try {
             connection = await oracledb.getConnection({
                 user: "SATUR",
