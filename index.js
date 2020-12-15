@@ -1334,7 +1334,7 @@ app.post('/api/crearreserva', function (req, res) {
     var montoTotalInt = parseInt(montoTotal);
     var valorAnticipadoInt = parseInt(valorAnticipado);
 
-
+    console.log("Fechas " + fechaInicio + "Fecha Termino" + fechaTermino);
 
 
     async function insertarReserva() {
@@ -1351,7 +1351,7 @@ app.post('/api/crearreserva', function (req, res) {
                 p_out: { type: oracledb.STRING, dir: oracledb.BIND_OUT, maxSize: 200 }
             };
             // Insertar en Tabla Reserva
-            const result = await connection.execute("BEGIN SP_CREAR_RESERVA(TO_DATE('" + fechaInicio + "', 'yyyy/mm/dd') ,TO_DATE('" + fechaTermino + "' , 'yyyy/mm/dd')  , '" + montoTotalInt + "' ,'" + valorAnticipadoInt + "', '" + idUsuario + "' , TO_DATE(sysdate,'yyyy/mm/dd')  ,'" + departamento + "' ,1,:p_out); END;", bindvars);
+            const result = await connection.execute("BEGIN SP_CREAR_RESERVA(TO_DATE('" + fechaInicio + "', 'dd-mm-yyyy') ,TO_DATE('" + fechaTermino + "' , 'dd-mm-yyyy')  , '" + montoTotalInt + "' ,'" + valorAnticipadoInt + "', '" + idUsuario + "' , TO_DATE(sysdate,'dd/mm/yyyy')  ,'" + departamento + "' ,1,:p_out); END;", bindvars);
             var idInsertado = parseInt(result.outBinds.p_out);
             console.log("Ultima id" + idInsertado);
 
@@ -1394,7 +1394,7 @@ app.post('/api/crearreserva', function (req, res) {
             });
 
             // Insertar en Tabla Disponiblidad 
-            const result = await connection.execute("BEGIN SP_INSERT_DISP_DEPART(TO_DATE('" + fechaInicio + "', 'yyyy/mm/dd'),TO_DATE('" + fechaTermino + "', 'yyyy/mm/dd'),'" + departamento + "'); END;");
+            const result = await connection.execute("BEGIN SP_INSERT_DISP_DEPART(TO_DATE('" + fechaInicio + "', 'dd-mm-yyyy'),TO_DATE('" + fechaTermino + "', 'dd-mm-yyyy'),'" + departamento + "'); END;");
 
             if (estadoTour == 1) {
                 // Insertar el Tour
