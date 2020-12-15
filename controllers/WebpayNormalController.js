@@ -41,8 +41,9 @@ class WebpayPlusController {
         }
 
 
-        let result = await conn.execute(
-          "INSERT INTO PAGOS VALUES (" + idLast + ",'" + tokenws + "',(TO_DATE(sysdate, 'dd/mm/yyyy hh24:mi:ss')),0,'" + idReserva + "','" + amount + "','"+motivo+"')"
+        let resultadoagregarpago = await conn.execute(
+          "BEGIN SP_AGREGAR_PAGO('" + tokenws + " ', (TO_DATE(sysdate, 'dd/mm/yyyy hh24:mi:ss')) , 1 ,  " + idReserva + " ," + amount + " , '"+motivo+"' ); END;"
+          // "INSERT INTO PAGOS VALUES (" + idLast + ",'" + tokenws + "',(TO_DATE(sysdate, 'dd/mm/yyyy hh24:mi:ss')),1,'" + idReserva + "','" + amount + "','"+motivo+"')"
 
         );
         console.log("Insertadoi");
@@ -94,9 +95,9 @@ class WebpayPlusController {
           conn = await oracledb.getConnection(connAttrs);
 
           console.log('Connected to database');
-          let result = await conn.execute(
-            "UPDATE PAGOS set estadopago = 1 where tokenpago = '" + token_ws + "' "
-          );
+          // let result = await conn.execute(
+          //   "UPDATE PAGOS set estadopago = 1 where tokenpago = '" + token_ws + "' "
+          // );
 
           console.log("Actualizado");
         } catch (err) {
@@ -186,10 +187,15 @@ class WebpayPlusController {
         } else {
           var idLast = idLast + 1;
         }
+        let updatereserva = await conn.execute(
+          "UPDATE reservas set estador_idestado = 2 where idreserva = " + idReserva + " "
+          // "INSERT INTO PAGOS VALUES (" + idLast + ",'" + tokenws + "',(TO_DATE(sysdate, 'dd/mm/yyyy hh24:mi:ss')),0,'" + idReserva + "','" + amount + "','"+motivo+"')"
 
+        );
 
         let result = await conn.execute(
-          "INSERT INTO PAGOS VALUES (" + idLast + ",'" + tokenws + "',(TO_DATE(sysdate, 'dd/mm/yyyy hh24:mi:ss')),0,'" + idReserva + "','" + amount + "','"+motivo+"')"
+          "BEGIN SP_AGREGAR_PAGO('" + tokenws + " ', (TO_DATE(sysdate, 'dd/mm/yyyy hh24:mi:ss')) , 1 ,  " + idReserva + " ," + amount + " , '"+motivo+"' ); END;"
+          // "INSERT INTO PAGOS VALUES (" + idLast + ",'" + tokenws + "',(TO_DATE(sysdate, 'dd/mm/yyyy hh24:mi:ss')),0,'" + idReserva + "','" + amount + "','"+motivo+"')"
 
         );
 
@@ -243,23 +249,23 @@ class WebpayPlusController {
           conn = await oracledb.getConnection(connAttrs);
 
           console.log('Connected to database' + token_ws);
-          let result = await conn.execute(
-            "UPDATE PAGOS set estadopago = 1 where tokenpago = '" + token_ws + "' "
-          );
+          // let result = await conn.execute(
+          //   "UPDATE PAGOS set estadopago = 1 where tokenpago = '" + token_ws + "' "
+          // );
 
-          let idReserva = await conn.execute(
-            "select reservas_idreserva as ID from pagos where tokenpago = '"+token_ws+"' ",
-            [],
-            {
-              outFormat: oracledb.OBJECT
-            });
+          // let idReserva = await conn.execute(
+          //   "select reservas_idreserva as ID from pagos where tokenpago = '"+token_ws+"' ",
+          //   [],
+          //   {
+          //     outFormat: oracledb.OBJECT
+          //   });
   
   
-          console.log("FFilas " + idReserva.rows[0].ID);
+          // console.log("FFilas " + idReserva.rows[0].ID);
         
             // Update Reserva
 
-          let resultadoPagoRestante = await conn.execute("UPDATE reservas set estador_idestado = 2 where idreserva = " + idReserva.rows[0].ID + "");
+          // let resultadoPagoRestante = await conn.execute("UPDATE reservas set estador_idestado = 2 where idreserva = " + idReserva.rows[0].ID + "");
 
           console.log("Actualizado");
         } catch (err) {

@@ -902,7 +902,7 @@ app.get('/api/getReservas/:idUsuario', function (req, res) {
             }));
             return;
         }
-        connection.execute("SELECT r.idreserva , TO_CHAR( r.fechainicioreserva, 'yyyy/mm/dd') as fechainicioreserva , TO_CHAR( r.fechaterminoreserva , 'yyyy/mm/dd') as fechaterminoreserva  , r.montototalreserva , r.usuarios_idusuario,r.departamento_iddepartamento, r.estador_idestado , er.estadoreserva , id.rutaimagen ,d.descripciond,d.nombred  from reservas r  join estadoreserva er on er.idestado = r.estador_idestado join imagendepa id on id.departamento_iddepartamento = r.departamento_iddepartamento join departamento d  on d.iddepartamento = r.departamento_iddepartamento where usuarios_idusuario = " + idUsuario + " group by r.idreserva , r.fechainicioreserva, r.fechaterminoreserva, r.montototalreserva, r.usuarios_idusuario,r.departamento_iddepartamento, r.estador_idestado , er.estadoreserva,id.rutaimagen,d.descripciond ,d.nombred   ", {}, {
+        connection.execute(" SELECT r.idreserva , TO_CHAR( r.fechainicioreserva, 'yyyy/mm/dd') as fechainicioreserva , (SELECT  max(rutaimagen)     FROM    imagendepa   WHERE   departamento_iddepartamento =d.iddepartamento) as rutaimagen,TO_CHAR( r.fechaterminoreserva , 'yyyy/mm/dd') as fechaterminoreserva  , r.montototalreserva , r.usuarios_idusuario,r.departamento_iddepartamento, r.estador_idestado , er.estadoreserva , d.descripciond,d.nombred  from reservas r  join estadoreserva er on er.idestado = r.estador_idestado   join departamento d  on d.iddepartamento = r.departamento_iddepartamento where usuarios_idusuario = "+idUsuario+"  ", {}, {
             outFormat: oracledb.OBJECT // Return the result as Object
         }, function (err, result) {
             if (err) {
